@@ -55,7 +55,7 @@ public class PokemonBase :ScriptableObject
 public  class LearnableMove
 {
     //ヒエラルキーで設定するもの 
-    [SerializeField] MoveBase _base;
+    [SerializeField] public MoveBase _base;
     [SerializeField] int level;
 
     public MoveBase Base {get =>_base;}

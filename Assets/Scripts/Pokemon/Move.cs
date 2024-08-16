@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Move : MonoBehaviour
+public class Move 
 {
     //ポケモンが実際に使う時の技データ
     //技のマスターデータを持つ

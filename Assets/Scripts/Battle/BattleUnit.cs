@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro.EditorUtilities;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class BattleUnit : MonoBehaviour
 {
@@ -19,15 +20,17 @@ public class BattleUnit : MonoBehaviour
     {
         //_baseからレベルに応じたモンスターを生成する
         // BattleSystemで使うからプロパティに入れる
+
         Pokemon = new Pokemon(_base,level);
+        
 
         Image image = GetComponent<Image>();
-        if(isPlayerUnit)
+        if (isPlayerUnit)
         {
             image.sprite = Pokemon.Base.BackSprite;
         }
 
-        if(!isPlayerUnit)
+        if (!isPlayerUnit)
         {
             image.sprite = Pokemon.Base.FrontSprite;
         }
