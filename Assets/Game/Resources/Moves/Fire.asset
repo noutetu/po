@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0dd8c2e410c7341628b16b456dc38e21, type: 3}
-  m_Name: Move01
+  m_Name: Fire
   m_EditorClassIdentifier: 
-  name: "\u306F\u3063\u3071\u30AB\u30C3\u30BF\u30FC"
+  name: "\u3072\u306E\u3053"
   description: 
-  power: 60
+  power: 40
   accuracy: 100
-  pp: 20
-  type: 5
+  pp: 25
+  type: 2

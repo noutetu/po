@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0dd8c2e410c7341628b16b456dc38e21, type: 3}
-  m_Name: Move5
+  m_Name: Poisn
   m_EditorClassIdentifier: 
-  name: "\u3072\u306E\u3053"
+  name: "\u30D8\u30C9\u30ED\u7206\u5F3E"
   description: 
-  power: 40
+  power: 90
   accuracy: 100
-  pp: 40
-  type: 1
+  pp: 10
+  type: 8

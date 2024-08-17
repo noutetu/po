@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0dd8c2e410c7341628b16b456dc38e21, type: 3}
-  m_Name: Move4
+  m_Name: Grass
   m_EditorClassIdentifier: 
-  name: "\u3072\u3063\u304B\u304F"
+  name: "\u306F\u3063\u3071\u30AB\u30C3\u30BF\u30FC"
   description: 
-  power: 35
-  accuracy: 100
-  pp: 40
-  type: 1
+  power: 55
+  accuracy: 95
+  pp: 25
+  type: 5

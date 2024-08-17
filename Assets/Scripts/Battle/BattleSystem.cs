@@ -42,7 +42,6 @@ public class BattleSystem : MonoBehaviour
         yield return dialogBox.TypeDialog
         ($"やせいの{enemyUnit.Pokemon.Base.Name} があらわれた！！！");
 
-        yield return new WaitForSeconds(1);
         PlayerAction();
     }
 
@@ -73,14 +72,14 @@ public class BattleSystem : MonoBehaviour
         yield return dialogBox.TypeDialog
         ($"{playerUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
 
-        yield return new WaitForSeconds(1);
 
         //ダメージ計算
-        bool isFainted = enemyUnit.Pokemon.TakeDamage(move, playerUnit.Pokemon);
+        DamageDetails damageDetails = enemyUnit.Pokemon.TakeDamage(move, playerUnit.Pokemon);
         //HPの描画
         yield return enemyHud.UpdateHP();
+        yield return ShowDamageDetails(damageDetails);
         //戦闘不能ならメッセージ
-        if (isFainted)
+        if (damageDetails.Fainted)
         {
             yield return dialogBox.TypeDialog
         ($"{enemyUnit.Pokemon.Base.Name}はたおれた!!");
@@ -102,14 +101,15 @@ public class BattleSystem : MonoBehaviour
         yield return dialogBox.TypeDialog
         ($"{enemyUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
 
-        yield return new WaitForSeconds(1);
 
         //ダメージ計算
-        bool isFainted = playerUnit.Pokemon.TakeDamage(move, enemyUnit.Pokemon);
+        DamageDetails damageDetails = playerUnit.Pokemon.TakeDamage(move, enemyUnit.Pokemon);
         //HPの描画
         yield return playerHud.UpdateHP();
+        yield return ShowDamageDetails(damageDetails);
+        
         //戦闘不能ならメッセージ
-        if (isFainted)
+        if (damageDetails.Fainted)
         {
             yield return dialogBox.TypeDialog
         ($"{playerUnit.Pokemon.Base.Name}はたおれた!!");
@@ -121,6 +121,22 @@ public class BattleSystem : MonoBehaviour
             PlayerAction();
         }
 
+    }
+
+    IEnumerator ShowDamageDetails(DamageDetails damageDetails)
+    {
+        if(damageDetails.Critical > 1)
+        {
+            yield return dialogBox.TypeDialog("急所にあたった");
+        }
+        if(damageDetails.TypeEffectivenss > 1)
+        {
+            yield return dialogBox.TypeDialog("こうかはバツグンだ！！");
+        }
+        if(damageDetails.TypeEffectivenss < 1)
+        {
+            yield return dialogBox.TypeDialog("こうかはいまひとつだ、、、");
+        }
     }
 
     private void Update()
