@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
-using Unity.Mathematics;
 using UnityEngine;
 
 //レベルに応じたステータスの違うモンスターを生成するクラス
@@ -89,5 +87,28 @@ public class Pokemon
     public int MaxHP
     {
         get { return Mathf.FloorToInt((Base.MaxHP * Level) / 100f) + 5; }
+    }
+
+    public bool TakeDamage(Move move,Pokemon attacker)
+    {
+        float modifiers = Random.Range(0.85f,1f);
+        float a = (2* attacker.Level + 10)/250f;
+        float d = a* move.Base.Power * ((float)attacker.Attack/Defence) + 2;
+        int damage = Mathf.FloorToInt(d*modifiers);
+
+        HP -= damage;
+
+        if(HP <= 0)
+        {
+            HP = 0;
+            return true; 
+        }
+        return false;
+    }
+
+    public Move GetRandomMove()
+    {
+        int r = Random.Range(0,Moves.Count);
+        return Moves[r];
     }
 }

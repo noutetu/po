@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: "\u4F53\u5F53\u305F\u308A"
   description: 
-  power: 40
+  power: 30
   accuracy: 100
   pp: 40
   type: 1

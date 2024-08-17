@@ -40,7 +40,7 @@ public class BattleSystem : MonoBehaviour
         dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
 
         yield return dialogBox.TypeDialog
-        ($"やせいの{enemyUnit.Pokemon.Base.Name} が現れた！！！");
+        ($"やせいの{enemyUnit.Pokemon.Base.Name} があらわれた！！！");
 
         yield return new WaitForSeconds(1);
         PlayerAction();
@@ -64,13 +64,72 @@ public class BattleSystem : MonoBehaviour
 
     }
 
+    //プレイヤーの技発動
+    IEnumerator PerformPlayerMove()
+    {
+        state = BattleState.BUSY;
+        //技を決定
+        Move move = playerUnit.Pokemon.Moves[currentMove];
+        yield return dialogBox.TypeDialog
+        ($"{playerUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
+
+        yield return new WaitForSeconds(1);
+
+        //ダメージ計算
+        bool isFainted = enemyUnit.Pokemon.TakeDamage(move, playerUnit.Pokemon);
+        //HPの描画
+        yield return enemyHud.UpdateHP();
+        //戦闘不能ならメッセージ
+        if (isFainted)
+        {
+            yield return dialogBox.TypeDialog
+        ($"{enemyUnit.Pokemon.Base.Name}はたおれた!!");
+        }
+        //戦闘可能ならEnemyMove
+        else
+        {
+            //それ以外ならenemyMove
+            StartCoroutine(EnemyMove());
+        }
+
+    }
+
+    IEnumerator EnemyMove()
+    {
+        state = BattleState.ENEMYMOVE;
+        //技を決定 =>ランダム
+        Move move = enemyUnit.Pokemon.GetRandomMove();
+        yield return dialogBox.TypeDialog
+        ($"{enemyUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
+
+        yield return new WaitForSeconds(1);
+
+        //ダメージ計算
+        bool isFainted = playerUnit.Pokemon.TakeDamage(move, enemyUnit.Pokemon);
+        //HPの描画
+        yield return playerHud.UpdateHP();
+        //戦闘不能ならメッセージ
+        if (isFainted)
+        {
+            yield return dialogBox.TypeDialog
+        ($"{playerUnit.Pokemon.Base.Name}はたおれた!!");
+        }
+        //戦闘可能ならEnemyMove
+        else
+        {
+            //それ以外ならenemyMove
+            PlayerAction();
+        }
+
+    }
+
     private void Update()
     {
-        if(state == BattleState.PLAYERACTION)
+        if (state == BattleState.PLAYERACTION)
         {
             HundleActionSelection();
         }
-        else if(state == BattleState.PLAYERMOVE)
+        else if (state == BattleState.PLAYERMOVE)
         {
             HundleMoveSelection();
         }
@@ -113,7 +172,7 @@ public class BattleSystem : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (currentMove < playerUnit.Pokemon.Moves.Count -1)
+            if (currentMove < playerUnit.Pokemon.Moves.Count - 1)
             {
                 currentMove++;
             }
@@ -127,7 +186,7 @@ public class BattleSystem : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (currentMove < playerUnit.Pokemon.Moves.Count -2)
+            if (currentMove < playerUnit.Pokemon.Moves.Count - 2)
             {
                 currentMove += 2;
             }
@@ -136,9 +195,20 @@ public class BattleSystem : MonoBehaviour
         {
             if (currentMove > 1)
             {
-                currentMove -=2;
+                currentMove -= 2;
             }
         }
-        dialogBox.UpdateMoveSelection(currentMove,playerUnit.Pokemon.Moves[currentMove]);
+        dialogBox.UpdateMoveSelection(currentMove, playerUnit.Pokemon.Moves[currentMove]);
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            // 技決定
+            //・技選択のUIは非表示
+            dialogBox.EnableMoveSelector(false);
+            //・ダイアログ復活
+            dialogBox.EnableDialogText(true);
+            //技決定の処理
+            StartCoroutine(PerformPlayerMove());
+        }
     }
 }
