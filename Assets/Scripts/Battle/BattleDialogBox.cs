@@ -18,6 +18,8 @@ public class BattleDialogBox : MonoBehaviour
 
     [SerializeField] int letterPerSecond;//1文字あたりの時間
 
+    [SerializeField] Color highlightColor;
+
     //変更するための関数
     public void SetDialog(string dialog)
     {
@@ -54,5 +56,25 @@ public class BattleDialogBox : MonoBehaviour
     {
         moveSelector.SetActive(enabled);
         moveDetails.SetActive(enabled);
+    }
+
+    //選択中のアクションの色を変える
+    public void UpdateActionSelection(int selectAction)
+    {
+        //selectActionが０の時はactionTexts[0]の色を青にし、それ以外を黒にする
+        //selectActionが1の時はactionTexts[1]の色を青にし、それ以外を黒にする
+
+        for(int i = 0; i < actionTexts.Count; i++)
+        {
+            if(selectAction == i)
+            {
+                actionTexts[i].color = highlightColor;
+            }
+            else
+            {
+                actionTexts[i].color = Color.black;
+            }
+        }
+        
     }
 }
