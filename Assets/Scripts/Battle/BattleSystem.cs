@@ -40,7 +40,7 @@ public class BattleSystem : MonoBehaviour
         dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
 
         yield return dialogBox.TypeDialog
-        ($"A wild {enemyUnit.Pokemon.Base.Name} appeard");
+        ($"やせいの{enemyUnit.Pokemon.Base.Name} が現れた！！！");
 
         yield return new WaitForSeconds(1);
         PlayerAction();
@@ -51,7 +51,7 @@ public class BattleSystem : MonoBehaviour
         state = BattleState.PLAYERACTION;
         dialogBox.EnableActionSelector(true);
 
-        StartCoroutine(dialogBox.TypeDialog("Choose an action"));
+        StartCoroutine(dialogBox.TypeDialog("どうする？"));
     }
 
     private void PlayerMove()
