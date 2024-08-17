@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dd8c2e410c7341628b16b456dc38e21, type: 3}
   m_Name: Move01
   m_EditorClassIdentifier: 
-  name: "\u4F53\u5F53\u305F\u308A"
+  name: GrassMixer
   description: 
-  power: 40
+  power: 75
   accuracy: 100
-  pp: 40
-  type: 1
+  pp: 20
+  type: 5

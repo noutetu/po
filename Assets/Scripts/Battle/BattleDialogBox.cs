@@ -75,6 +75,46 @@ public class BattleDialogBox : MonoBehaviour
                 actionTexts[i].color = Color.black;
             }
         }
-        
+    }
+
+    //選択中の技の色を変える
+    public void UpdateMoveSelection(int selectMove, Move move)
+    {
+        //selectActionが０の時はmoveTexts[0]の色を青にし、それ以外を黒にする
+        //selectActionが1の時はmoveTexts[1]の色を青にし、それ以外を黒にする
+        //selectActionが1の時はmoveTexts[2]の色を青にし、それ以外を黒にする
+        //selectActionが1の時はmoveTexts[3]の色を青にし、それ以外を黒にする
+
+        for(int i = 0; i < moveTexts.Count; i++)
+        {
+            if(selectMove == i)
+            {
+                moveTexts[i].color = highlightColor;
+            }
+            else
+            {
+                moveTexts[i].color = Color.black;
+            }
+            ppText.text = $"PP {move.PP}/{move.Base.PP}";
+            typeText.text = move.Base.Type.ToString();
+        }
+    }
+
+    public void SetMoveNames(List<Move> moves)
+    {
+        for(int i = 0; i < moveTexts.Count; i++)
+        {
+            //覚えている数だけ反映
+            if(i < moves.Count)
+            {
+                moveTexts[i].text = moves[i].Base.Name;
+            }
+            else
+            {
+                moveTexts[i].text = "";
+            }
+            
+
+        }
     }
 }
