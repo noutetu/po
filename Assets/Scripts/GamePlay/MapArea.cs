@@ -1,0 +1,17 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MapArea : MonoBehaviour
+{
+    //野生のポケモン一覧
+    [SerializeField] List<Pokemon> pokemons;
+
+    
+    //ランダムで渡す
+    public Pokemon GetRandomWildPokemon()
+    {
+        int r = Random.Range(0,pokemons.Count);
+        return pokemons[r];
+    }
+}

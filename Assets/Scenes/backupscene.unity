@@ -489,6 +489,7 @@ GameObject:
   - component: {fileID: 352616384}
   - component: {fileID: 352616386}
   - component: {fileID: 352616387}
+  - component: {fileID: 352616388}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -583,7 +584,6 @@ MonoBehaviour:
   longGrassLayer:
     serializedVersion: 2
     m_Bits: 256
-  gameController: {fileID: 55096616}
 --- !u!95 &352616387
 Animator:
   serializedVersion: 5
@@ -605,6 +605,23 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &352616388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 352616383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57474763981854c44a99f8bac56defbf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pokemons:
+  - level: 21
+    pokemonBase: {fileID: 11400000, guid: 425f17fe084f94fcc9d32923e6047752, type: 2}
+  - level: 17
+    pokemonBase: {fileID: 11400000, guid: 9203996b8cd254d3da98181cae2e8af1, type: 2}
 --- !u!1 &371317305
 GameObject:
   m_ObjectHideFlags: 0
@@ -786,6 +803,7 @@ GameObject:
   m_Component:
   - component: {fileID: 538653166}
   - component: {fileID: 538653165}
+  - component: {fileID: 538653167}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -823,6 +841,23 @@ Transform:
   - {fileID: 1554442023}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &538653167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 538653164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7957c6891170470faba569bf9e91bb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pokemons:
+  - level: 15
+    pokemonBase: {fileID: 11400000, guid: 9203996b8cd254d3da98181cae2e8af1, type: 2}
+  - level: 11
+    pokemonBase: {fileID: 11400000, guid: 425f17fe084f94fcc9d32923e6047752, type: 2}
 --- !u!1 &578246854
 GameObject:
   m_ObjectHideFlags: 0
@@ -1111,7 +1146,6 @@ MonoBehaviour:
   playerHud: {fileID: 1592139890}
   enemyHud: {fileID: 1269400171}
   dialogBox: {fileID: 1407361026}
-  gameController: {fileID: 55096616}
 --- !u!1 &1091625504
 GameObject:
   m_ObjectHideFlags: 0

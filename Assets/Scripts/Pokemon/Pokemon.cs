@@ -6,8 +6,14 @@ using UnityEngine;
 
 //レベルに応じたステータスの違うモンスターを生成するクラス
 //ただしデータのみ
+[System.Serializable]
 public class Pokemon
 {
+
+    //インスペクターからデータを設定できるようにする
+    [SerializeField] int level;
+    [SerializeField] PokemonBase pokemonBase;
+
     //ベースとなるデータ
     public PokemonBase Base { get; set; }
     public int Level { get; set; }
