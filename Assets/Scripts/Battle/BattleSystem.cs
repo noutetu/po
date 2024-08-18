@@ -31,9 +31,9 @@ public class BattleSystem : MonoBehaviour
     PokemonParty playerParty;
     Pokemon wildPokemon;
 
-    
 
-    public void StartBattle(PokemonParty pokemonParty,Pokemon wildPokemon)
+
+    public void StartBattle(PokemonParty pokemonParty, Pokemon wildPokemon)
     {
         this.playerParty = pokemonParty;
         this.wildPokemon = wildPokemon;
@@ -81,7 +81,7 @@ public class BattleSystem : MonoBehaviour
         state = BattleState.BUSY;
         //技を決定
         Move move = playerUnit.Pokemon.Moves[currentMove];
-        move.PP --;
+        move.PP--;
 
         yield return dialogBox.TypeDialog
         ($"{playerUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
@@ -119,7 +119,7 @@ public class BattleSystem : MonoBehaviour
         state = BattleState.ENEMYMOVE;
         //技を決定 =>ランダム
         Move move = enemyUnit.Pokemon.GetRandomMove();
-        move.PP --;
+        move.PP--;
         yield return dialogBox.TypeDialog
         ($"{enemyUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
 
@@ -140,9 +140,28 @@ public class BattleSystem : MonoBehaviour
         ($"{playerUnit.Pokemon.Base.Name}はたおれた!!");
             playerUnit.PlayerFaintAnimation();
             yield return new WaitForSeconds(0.5f);
-            BattleOver();
+            //戦えるポケモンがいるなら、次のポケモンをセットして自分のターンにする
+            Pokemon nextPokemon = playerParty.GetHealthyPokemon();
+            if (nextPokemon == null)
+            {
+
+                BattleOver();
+            }
+            else
+            {
+                //nextをセット
+                //モンスターの生成と描画
+                playerUnit.SetUp(nextPokemon);//playerの戦闘可能なpokemonをセット
+                //Hudの描画
+                playerHud.SetData(playerUnit.Pokemon);
+                dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
+
+                yield return dialogBox.TypeDialog
+                ($"ゆけっ！！{enemyUnit.Pokemon.Base.Name}！！！");
+
+                PlayerAction();
+            }
         }
-        //戦闘可能ならEnemyMove
         else
         {
             //それ以外ならenemyMove
