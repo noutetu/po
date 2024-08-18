@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -202,21 +203,27 @@ public class BattleSystem : MonoBehaviour
     {
 
         //下を入力するとRun,上を入力するとFightになる
-        // 0:Fight, 1:Run
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        // 0:Fight,  1:bag
+        // 2:Pokemon 3:run
+        if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (currentAction < 1)
-            {
-                currentAction++;
-            }
+            currentAction++;
         }
-        if (Input.GetKeyDown(KeyCode.UpArrow))
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            if (currentAction > 0)
-            {
-                currentAction--;
-            }
+            currentAction--;
         }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            currentAction += 2;
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            currentAction -= 2;
+        }
+
+        currentAction = Mathf.Clamp(currentAction,0,3);
+        
 
         //色をつけてどちらを選んでいるか管理する
 
@@ -235,32 +242,22 @@ public class BattleSystem : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (currentMove < playerUnit.Pokemon.Moves.Count - 1)
-            {
-                currentMove++;
-            }
+            currentMove++;
         }
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            if (currentMove > 0)
-            {
-                currentMove--;
-            }
+            currentMove--;
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (currentMove < playerUnit.Pokemon.Moves.Count - 2)
-            {
-                currentMove += 2;
-            }
+            currentMove += 2;
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if (currentMove > 1)
-            {
-                currentMove -= 2;
-            }
+            currentMove -= 2;
         }
+        currentMove = Mathf.Clamp(currentMove,0,playerUnit.Pokemon.Moves.Count-1);
+
         dialogBox.UpdateMoveSelection(currentMove, playerUnit.Pokemon.Moves[currentMove]);
 
         if (Input.GetKeyDown(KeyCode.Z))
