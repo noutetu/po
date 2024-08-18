@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float moveSpeed;
     [SerializeField] LayerMask solidObjectsLayer;//壁判定のレイヤー
     [SerializeField] LayerMask longGrassLayer;//草むら判定
+    [SerializeField] GameController gameController;
 
     bool isMoving;
 
@@ -19,7 +20,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    void Update()
+    public void HundleUpdate()
     {
         if (!isMoving)
         {
@@ -86,6 +87,7 @@ public class PlayerController : MonoBehaviour
             if(Random.Range(0,100) < 10)
             {
                 Debug.Log("野生のポケモンが現れた！！！");
+                gameController.StartBattle();
             }
         }
     }
