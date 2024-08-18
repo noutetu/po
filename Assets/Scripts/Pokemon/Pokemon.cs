@@ -110,6 +110,16 @@ public class Pokemon
             TypeEffectivenss = type,
         };
 
+        //特殊技かどうか
+        float attack = attacker.Attack;
+        float defence = attacker.Defence;
+
+        if(move.Base.isSpecial)
+        {
+            attack = attacker.SpAttack;
+            defence = SpDefence;
+        }
+
         // 乱数（0.85 〜 1.0）
         float random = Random.Range(0.85f, 1f);
 
@@ -118,7 +128,7 @@ public class Pokemon
 
         // ダメージの計算 (正しいポケモンのダメージ計算式に基づく)
         float a = (2 * attacker.Level + 10) / 250f;
-        float d = a * move.Base.Power * ((float)attacker.Attack / Defence) + 2;
+        float d = a * move.Base.Power * ((float)attack / defence) + 2;
         int damage = Mathf.FloorToInt(d * modifier);
 
         // HPの減少

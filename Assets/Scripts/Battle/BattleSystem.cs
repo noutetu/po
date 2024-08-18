@@ -74,6 +74,8 @@ public class BattleSystem : MonoBehaviour
         state = BattleState.BUSY;
         //技を決定
         Move move = playerUnit.Pokemon.Moves[currentMove];
+        move.PP --;
+
         yield return dialogBox.TypeDialog
         ($"{playerUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
         //攻撃アニメーション
@@ -110,6 +112,7 @@ public class BattleSystem : MonoBehaviour
         state = BattleState.ENEMYMOVE;
         //技を決定 =>ランダム
         Move move = enemyUnit.Pokemon.GetRandomMove();
+        move.PP --;
         yield return dialogBox.TypeDialog
         ($"{enemyUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
 
