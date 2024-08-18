@@ -14,4 +14,11 @@ public class PokemonParty : MonoBehaviour
     {
         return pokemons.Where(monster => monster.HP >0).FirstOrDefault();
     }
+
+    private void Start() {
+        foreach(Pokemon pokemon in pokemons)
+        {
+            pokemon.Init();
+        }
+    }
 }

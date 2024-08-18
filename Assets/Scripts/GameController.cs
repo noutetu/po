@@ -16,7 +16,7 @@ public class GameController : MonoBehaviour
     [SerializeField] Camera worldCamera;
     [SerializeField] PlayerController playerController;
     [SerializeField] BattleSystem battleSystem;
-    GameState state = GameState.FreeRoam;
+ GameState state = GameState.FreeRoam;
 
     void Start()
     {
@@ -43,7 +43,11 @@ public class GameController : MonoBehaviour
         state = GameState.Battle;
         battleSystem.gameObject.SetActive(true);
         worldCamera.gameObject.SetActive(false);
-        battleSystem.StartBattle();
+        // パーティと野生ポケモンの取得
+        PokemonParty pokemonParty = playerController.GetComponent<PokemonParty>();
+        //シーンないから一致するコンポーネントを一つ取得する
+        Pokemon wildPokemon = FindObjectOfType<MapArea>().GetRandomWildPokemon();;
+        battleSystem.StartBattle(pokemonParty,wildPokemon);
     }
 
     public void endBattle()

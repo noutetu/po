@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 //レベルに応じたステータスの違うモンスターを生成するクラス
 //ただしデータのみ
@@ -10,13 +11,15 @@ using UnityEngine;
 public class Pokemon
 {
 
+    
+
     //インスペクターからデータを設定できるようにする
     [SerializeField] int level;
     [SerializeField] PokemonBase pokemonBase;
 
     //ベースとなるデータ
-    public PokemonBase Base { get; set; }
-    public int Level { get; set; }
+    public PokemonBase Base { get => pokemonBase; }
+    public int Level { get => level;}
     //使える技のリスト
     public List<Move> Moves { get; set; }
 
@@ -24,20 +27,14 @@ public class Pokemon
     public int HP { get; set; }
 
     //コンストラクタ
-    public Pokemon(PokemonBase pBase, int pLevel)
-    {
-        if (pBase == null)
-        {
-            return;
-        }
-        Base = pBase;
-        Level = pLevel;
+    public void Init()
+    {   
         HP = MaxHP;
         Moves = new List<Move>();
 
 
         //使える技の設定:覚える技のレベル以上なら、リストに追加 
-        foreach (LearnableMove learnableMove in pBase.LearnableMoves)
+        foreach (LearnableMove learnableMove in Base.LearnableMoves)
         {
 
 

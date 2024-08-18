@@ -26,10 +26,17 @@ public class BattleSystem : MonoBehaviour
     BattleState state;
     public UnityAction BattleOver;
 
+
+    //これらの変数をどこから取得する
+    PokemonParty playerParty;
+    Pokemon wildPokemon;
+
     
 
-    public void StartBattle()
+    public void StartBattle(PokemonParty pokemonParty,Pokemon wildPokemon)
     {
+        this.playerParty = pokemonParty;
+        this.wildPokemon = wildPokemon;
         StartCoroutine(SetUpBattle());
     }
 
@@ -37,8 +44,8 @@ public class BattleSystem : MonoBehaviour
     {
         state = BattleState.START;
         //モンスターの生成と描画
-        playerUnit.SetUp();
-        enemyUnit.SetUp();
+        playerUnit.SetUp(playerParty.GetHealthyPokemon());//playerの戦闘可能なpokemonをセット
+        enemyUnit.SetUp(wildPokemon);//野生ポケモンをセット
         //Hudの描画
         playerHud.SetData(playerUnit.Pokemon);
         enemyHud.SetData(enemyUnit.Pokemon);
