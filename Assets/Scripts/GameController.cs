@@ -18,6 +18,12 @@ public class GameController : MonoBehaviour
     [SerializeField] BattleSystem battleSystem;
     GameState state = GameState.FreeRoam;
 
+    void Start()
+    {
+        playerController.OnEncounted += StartBattle;
+        battleSystem.BattleOver += endBattle;
+    }
+
     void Update()
     {
         if(state == GameState.FreeRoam)

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public enum BattleState
 {
@@ -19,11 +20,11 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] BattleHud enemyHud;
     [SerializeField] BattleDialogBox dialogBox;
 
-    [SerializeField] GameController gameController;
 
     int currentAction;// 0:Fight, 1:Run
     int currentMove;// 0:左上, 1:右上, 2:左下, 3:右下
     BattleState state;
+    public UnityAction BattleOver;
 
     
 
@@ -92,7 +93,7 @@ public class BattleSystem : MonoBehaviour
         ($"{enemyUnit.Pokemon.Base.Name}はたおれた!!");
             enemyUnit.PlayerFaintAnimation();
             yield return new WaitForSeconds(0.5f);
-            gameController.endBattle();
+            BattleOver();
 
         }
         //戦闘可能ならEnemyMove
@@ -129,7 +130,7 @@ public class BattleSystem : MonoBehaviour
         ($"{playerUnit.Pokemon.Base.Name}はたおれた!!");
             playerUnit.PlayerFaintAnimation();
             yield return new WaitForSeconds(0.5f);
-            gameController.endBattle();
+            BattleOver();
         }
         //戦闘可能ならEnemyMove
         else

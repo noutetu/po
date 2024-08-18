@@ -1,15 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+
 
 public class PlayerController : MonoBehaviour
 {
-    
+
     Animator animator;
     [SerializeField] float moveSpeed;
     [SerializeField] LayerMask solidObjectsLayer;//壁判定のレイヤー
     [SerializeField] LayerMask longGrassLayer;//草むら判定
-    [SerializeField] GameController gameController;
+
+    public UnityAction OnEncounted;
 
     bool isMoving;
 
@@ -29,7 +32,7 @@ public class PlayerController : MonoBehaviour
             input.y = Input.GetAxisRaw("Vertical");
 
             //斜め移動の対策
-            if(input.x != 0)
+            if (input.x != 0)
             {
                 input.y = 0;
             }
@@ -41,11 +44,11 @@ public class PlayerController : MonoBehaviour
                 animator.SetFloat("MoveY", input.y);
                 Vector2 targetPos = transform.position;
                 targetPos += input;
-                if(IsWalkable(targetPos))
+                if (IsWalkable(targetPos))
                 {
                     StartCoroutine(Move(targetPos));
                 }
-                
+
             }
         }
 
@@ -64,10 +67,10 @@ public class PlayerController : MonoBehaviour
             transform.position,//現在の場所
             targetPos,//目的地
             moveSpeed * Time.deltaTime);
-            
+
             yield return null;
         }
-        
+
         transform.position = targetPos;
         isMoving = false;
         CheckForEncounters();
@@ -75,19 +78,21 @@ public class PlayerController : MonoBehaviour
     //targetPosに移動可能か調べる関数
     bool IsWalkable(Vector2 targetPos)
     {
-       //targetPosに半径0.2の円のrayを飛ばして、ぶつからなかったらtrue
-        return !Physics2D.OverlapCircle(targetPos,0.05f,solidObjectsLayer);
+        //targetPosに半径0.2の円のrayを飛ばして、ぶつからなかったらtrue
+        return !Physics2D.OverlapCircle(targetPos, 0.05f, solidObjectsLayer);
     }
 
     //自分の場所から円のRayを飛ばして、草むらに当たったらランダムエンカウント
     void CheckForEncounters()
     {
-        if(Physics2D.OverlapCircle(transform.position,0.2f,longGrassLayer))
+        if (Physics2D.OverlapCircle(transform.position, 0.2f, longGrassLayer))
         {
-            if(Random.Range(0,100) < 10)
+            if (Random.Range(0, 100) < 10)
             {
                 Debug.Log("野生のポケモンが現れた！！！");
-                gameController.StartBattle();
+                animator.SetBool("IsMoving", false);
+
+                OnEncounted();
             }
         }
     }
