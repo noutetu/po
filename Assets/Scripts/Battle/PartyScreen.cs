@@ -12,6 +12,8 @@ public class PartyScreen : MonoBehaviour
     ParytMemberUI[] memberSlots;
     [SerializeField] Text messageText;
 
+    List<Pokemon> pokemons;
+
     //parytMemberUIの取得
     public void Init()
     {
@@ -21,6 +23,7 @@ public class PartyScreen : MonoBehaviour
     //battleSystemから手持ちのポケモンデータをもらって、それぞれにデータをセットする
     public void SetPartyData(List<Pokemon> pokemons)
     {
+         this.pokemons = pokemons;
         for(int i =0; i < memberSlots.Length; i++)
         {
             if(i < pokemons.Count)
@@ -32,5 +35,23 @@ public class PartyScreen : MonoBehaviour
             }
         }
         messageText.text = "ポケモンを選択してください";
+    }
+
+    public void UpdateMemberSelection(int selectedMember)
+    {
+       
+        for(int i = 0; i < pokemons.Count; i++)
+        {
+            if(i ==selectedMember )
+            {
+                //色を変える
+                memberSlots[i].SetSelected(true);
+            }
+            else
+            {
+                //色を黒色
+                memberSlots[i].SetSelected(false);
+            }
+        }
     }
 }

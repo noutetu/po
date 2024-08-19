@@ -8,6 +8,7 @@ public class ParytMemberUI : MonoBehaviour
     [SerializeField] Text nameText;
     [SerializeField] Text levelText;
     [SerializeField] HPBar hpbar;
+    [SerializeField] Color highlightColor;
 
     Pokemon _pokemon;
 
@@ -18,6 +19,18 @@ public class ParytMemberUI : MonoBehaviour
         nameText.text =pokemon.Base.Name;
         levelText.text ="LV:" + pokemon.Level;
         hpbar.SetHP((float)pokemon.HP/pokemon.MaxHP);
+    }
+
+    public void SetSelected(bool selected)
+    {
+        if (selected)
+        {
+            nameText.color =highlightColor;
+        }
+        else
+        {
+            nameText.color = Color.black;
+        }
     }
 
 }

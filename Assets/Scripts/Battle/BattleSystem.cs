@@ -11,6 +11,7 @@ public enum BattleState
     PLAYERMOVE,//技選択
     ENEMYMOVE,
     BUSY,
+    PARTYSCREEN,//ポケモン選択状態
 }
 
 public class BattleSystem : MonoBehaviour
@@ -24,6 +25,7 @@ public class BattleSystem : MonoBehaviour
 
     int currentAction;// 0:Fight, 1:Run
     int currentMove;// 0:左上, 1:右上, 2:左下, 3:右下
+    int currentMember;
     BattleState state;
     public UnityAction BattleOver;
 
@@ -79,6 +81,7 @@ public class BattleSystem : MonoBehaviour
 
     void OpenPartyAction()
     {
+        state = BattleState.PARTYSCREEN;
         partyScreen.gameObject.SetActive(true);
         partyScreen.SetPartyData(playerParty.Pokemons);
     }
@@ -204,6 +207,10 @@ public class BattleSystem : MonoBehaviour
         {
             HundleMoveSelection();
         }
+        else if(state == BattleState.PARTYSCREEN)
+        {
+            HundlePartySelection();
+        }
     }
 
     public void HundleActionSelection()
@@ -280,6 +287,41 @@ public class BattleSystem : MonoBehaviour
             dialogBox.EnableDialogText(true);
             //技決定の処理
             StartCoroutine(PerformPlayerMove());
+        }
+    }
+
+    private void HundlePartySelection()
+    {
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            currentMember++;
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            currentMember--;
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            currentMember += 2;
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            currentMember -= 2;
+        }
+        currentMember = Mathf.Clamp(currentMember,0,playerParty.Pokemons.Count-1);
+
+        //選択中のモンスター名に色をつける
+        partyScreen.UpdateMemberSelection(currentMember);
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            //モンスター決定
+        }
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            //モンスター決定
+            partyScreen.gameObject.SetActive(false);
+            PlayerAction();
         }
     }
 }
