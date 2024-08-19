@@ -20,7 +20,7 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] BattleHud playerHud;
     [SerializeField] BattleHud enemyHud;
     [SerializeField] BattleDialogBox dialogBox;
-
+    [SerializeField] PartyScreen partyScreen;
 
     int currentAction;// 0:Fight, 1:Run
     int currentMove;// 0:左上, 1:右上, 2:左下, 3:右下
@@ -47,6 +47,7 @@ public class BattleSystem : MonoBehaviour
         //モンスターの生成と描画
         playerUnit.SetUp(playerParty.GetHealthyPokemon());//playerの戦闘可能なpokemonをセット
         enemyUnit.SetUp(wildPokemon);//野生ポケモンをセット
+        partyScreen.Init();
         //Hudの描画
         playerHud.SetData(playerUnit.Pokemon);
         enemyHud.SetData(enemyUnit.Pokemon);
@@ -74,6 +75,12 @@ public class BattleSystem : MonoBehaviour
         dialogBox.EnableActionSelector(false);
         dialogBox.EnableMoveSelector(true);
 
+    }
+
+    void OpenPartyAction()
+    {
+        partyScreen.gameObject.SetActive(true);
+        partyScreen.SetPartyData(playerParty.Pokemons);
     }
 
     //プレイヤーの技発動
@@ -150,16 +157,16 @@ public class BattleSystem : MonoBehaviour
             }
             else
             {
+                yield return dialogBox.TypeDialog
+                ($"ゆけっ！！{nextPokemon.Base.Name}!!!");
+                yield return new WaitForSeconds(0.3f);
                 //nextをセット
                 //モンスターの生成と描画
                 playerUnit.SetUp(nextPokemon);//playerの戦闘可能なpokemonをセット
+                yield return new WaitForSeconds(0.6f);
                 //Hudの描画
                 playerHud.SetData(playerUnit.Pokemon);
                 dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
-
-                yield return dialogBox.TypeDialog
-                ($"ゆけっ！！{enemyUnit.Pokemon.Base.Name}！！！");
-
                 PlayerAction();
             }
         }
@@ -234,6 +241,10 @@ public class BattleSystem : MonoBehaviour
             if (currentAction == 0)
             {
                 PlayerMove();
+            }
+            if (currentAction == 2)
+            {
+                OpenPartyAction();
             }
         }
     }
