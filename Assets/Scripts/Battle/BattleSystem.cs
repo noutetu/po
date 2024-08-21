@@ -278,6 +278,13 @@ public class BattleSystem : MonoBehaviour
             //技決定の処理
             StartCoroutine(PerformPlayerMove());
         }
+        //キャンセル
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            dialogBox.EnableMoveSelector(false);
+            dialogBox.EnableDialogText(true);
+            PlayerAction();
+        }
     }
 
     private void HundlePartySelection()
@@ -335,6 +342,7 @@ public class BattleSystem : MonoBehaviour
             partyScreen.gameObject.SetActive(false);
             PlayerAction();
         }
+        
     }
 
     IEnumerator SwitchPokemon(Pokemon newPokemon)
