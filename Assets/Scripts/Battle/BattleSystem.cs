@@ -56,7 +56,21 @@ public class BattleSystem : MonoBehaviour
         yield return dialogBox.TypeDialog
         ($"やせいの{enemyUnit.Pokemon.Base.Name} があらわれた！！！");
 
-        ActionSelection();
+        ChooseFirstTurn();
+    }
+
+    void ChooseFirstTurn()
+    {
+        if(playerUnit.Pokemon.Speed >= enemyUnit.Pokemon.Speed)
+        {
+            //Playerのターン
+            ActionSelection();
+        }
+        else
+        {
+            //Playerのターン
+            StartCoroutine(EnemyMove());
+        }
     }
 
     private void ActionSelection()
@@ -154,25 +168,10 @@ public class BattleSystem : MonoBehaviour
         yield return new WaitForSeconds(0.4f);
         targetUnit.PlayerHitAnimation();
         yield return new WaitForSeconds(0.4f);
-
+        //変化技なら
         if (move.Base.Category == MoveCategory.Stat)
         {
-            MoveEffects effects = move.Base.Effects;
-            if (effects.Boosts != null)
-            {
-                if (move.Base.Target == MoveTarget.Self)
-                {
-                    //自身に対してステータス変化
-                    sourceUnit.Pokemon.ApplyBoosts(effects.Boosts);
-                }
-                else
-                {
-                    //相手に対してステータス変化
-                    targetUnit.Pokemon.ApplyBoosts(effects.Boosts);
-                }
-            }
-            yield return ShowStatusChanges((sourceUnit.Pokemon));
-            yield return ShowStatusChanges((targetUnit.Pokemon));
+            yield return RunMoveEffects(move,sourceUnit.Pokemon,targetUnit.Pokemon);
         }
         else
         {
@@ -194,6 +193,26 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             CheckForBattleOver(targetUnit);
         }
+    }
+
+    IEnumerator RunMoveEffects(Move move,Pokemon source, Pokemon target)
+    {
+        MoveEffects effects = move.Base.Effects;
+            if (effects.Boosts != null)
+            {
+                if (move.Base.Target == MoveTarget.Self)
+                {
+                    //自身に対してステータス変化
+                    source.ApplyBoosts(effects.Boosts);
+                }
+                else
+                {
+                    //相手に対してステータス変化
+                    target.ApplyBoosts(effects.Boosts);
+                }
+            }
+            yield return ShowStatusChanges((source));
+            yield return ShowStatusChanges((target));
     }
 
     //ステータス変化のログを表示する関数
@@ -405,7 +424,7 @@ public class BattleSystem : MonoBehaviour
         dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
         if (fainted)
         {
-            ActionSelection();
+            ChooseFirstTurn();
         }
         else
         {
