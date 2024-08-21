@@ -8,7 +8,10 @@ public class BattleUnit : MonoBehaviour
 {
     //モンスターはBattleSystemから受け取る
    [SerializeField] bool isPlayerUnit;
+   [SerializeField] BattleHud hud;
 
+    public bool IsPlayerUnit { get => isPlayerUnit;}
+    public BattleHud Hud { get => hud;}
     public Pokemon Pokemon { get; set; }
 
     Vector3 orginalPos;
@@ -41,6 +44,7 @@ public class BattleUnit : MonoBehaviour
         {
             image.sprite = Pokemon.Base.FrontSprite;
         }
+        hud.SetData(pokemon);
         image.color = originalColor;
         PlayerEnterAnimation();
     }

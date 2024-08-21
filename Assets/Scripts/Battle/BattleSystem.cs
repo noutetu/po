@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,19 +8,18 @@ using UnityEngine.Events;
 public enum BattleState
 {
     START,
-    PLAYERACTION,//行動選択
-    PLAYERMOVE,//技選択
-    ENEMYMOVE,
+    ACTIONSELECTION,//行動選択
+    MOVESELECTION,//技選択
+    PERFROMMOVE,
     BUSY,
     PARTYSCREEN,//ポケモン選択状態
+    BATTLEOBER,//バトル終了
 }
 
 public class BattleSystem : MonoBehaviour
 {
     [SerializeField] BattleUnit playerUnit;
     [SerializeField] BattleUnit enemyUnit;
-    [SerializeField] BattleHud playerHud;
-    [SerializeField] BattleHud enemyHud;
     [SerializeField] BattleDialogBox dialogBox;
     [SerializeField] PartyScreen partyScreen;
 
@@ -50,29 +50,26 @@ public class BattleSystem : MonoBehaviour
         playerUnit.SetUp(playerParty.GetHealthyPokemon());//playerの戦闘可能なpokemonをセット
         enemyUnit.SetUp(wildPokemon);//野生ポケモンをセット
         partyScreen.Init();
-        //Hudの描画
-        playerHud.SetData(playerUnit.Pokemon);
-        enemyHud.SetData(enemyUnit.Pokemon);
         dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
 
         yield return dialogBox.TypeDialog
         ($"やせいの{enemyUnit.Pokemon.Base.Name} があらわれた！！！");
 
-        PlayerAction();
+        ActionSelection();
     }
 
-    private void PlayerAction()
+    private void ActionSelection()
     {
-        state = BattleState.PLAYERACTION;
+        state = BattleState.ACTIONSELECTION;
         dialogBox.EnableActionSelector(true);
 
         StartCoroutine(dialogBox.TypeDialog("どうする？"));
     }
 
-    private void PlayerMove()
+    private void Moveselection()
     {
         Debug.Log("playermove");
-        state = BattleState.PLAYERMOVE;
+        state = BattleState.MOVESELECTION;
         dialogBox.EnableDialogText(false);
         dialogBox.EnableActionSelector(false);
         dialogBox.EnableMoveSelector(true);
@@ -87,88 +84,84 @@ public class BattleSystem : MonoBehaviour
     }
 
     //プレイヤーの技発動
-    IEnumerator PerformPlayerMove()
+    IEnumerator PlayerMove()
     {
-        state = BattleState.BUSY;
+        state = BattleState.PERFROMMOVE;
         //技を決定
         Move move = playerUnit.Pokemon.Moves[currentMove];
-        move.PP--;
+        yield return RunMove(playerUnit,enemyUnit,move);
 
-        yield return dialogBox.TypeDialog
-        ($"{playerUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
-        //攻撃アニメーション
-        playerUnit.PlayerAttackAnimation();
-        yield return new WaitForSeconds(0.4f);
-        enemyUnit.PlayerHitAnimation();
-        yield return new WaitForSeconds(0.4f);
-        //ダメージ計算
-        DamageDetails damageDetails = enemyUnit.Pokemon.TakeDamage(move, playerUnit.Pokemon);
-        //HPの描画
-        yield return enemyHud.UpdateHP();
-        yield return ShowDamageDetails(damageDetails);
-        //戦闘不能ならメッセージ
-        if (damageDetails.Fainted)
+        if(state == BattleState.PERFROMMOVE)
         {
-            yield return dialogBox.TypeDialog
-        ($"{enemyUnit.Pokemon.Base.Name}はたおれた!!");
-            enemyUnit.PlayerFaintAnimation();
-            yield return new WaitForSeconds(0.5f);
-            BattleOver();
-
-        }
-        //戦闘可能ならEnemyMove
-        else
-        {
-            //それ以外ならenemyMove
             StartCoroutine(EnemyMove());
         }
-
     }
 
     IEnumerator EnemyMove()
     {
-        state = BattleState.ENEMYMOVE;
+        state = BattleState.PERFROMMOVE;
         //技を決定 =>ランダム
         Move move = enemyUnit.Pokemon.GetRandomMove();
-        move.PP--;
-        yield return dialogBox.TypeDialog
-        ($"相手の{enemyUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
 
-        enemyUnit.PlayerAttackAnimation();
-        yield return new WaitForSeconds(0.4f);
-        playerUnit.PlayerHitAnimation();
-        yield return new WaitForSeconds(0.4f);
-        //ダメージ計算
-        DamageDetails damageDetails = playerUnit.Pokemon.TakeDamage(move, enemyUnit.Pokemon);
-        //HPの描画
-        yield return playerHud.UpdateHP();
-        yield return ShowDamageDetails(damageDetails);
+        yield return RunMove(enemyUnit,playerUnit,move);
 
-        //戦闘不能ならメッセージ
-        if (damageDetails.Fainted)
+        if(state == BattleState.PERFROMMOVE)
         {
-            yield return dialogBox.TypeDialog
-        ($"{playerUnit.Pokemon.Base.Name}はたおれた!!");
-            playerUnit.PlayerFaintAnimation();
-            yield return new WaitForSeconds(0.5f);
-            //戦えるポケモンがいるなら、選択画面を表示
+            ActionSelection();
+        }
+    }
+
+    void CheckForBattleOver(BattleUnit faintedUnit)
+    {
+        //やられたポケモンが
+        //playerUnitなら
+        if (faintedUnit.IsPlayerUnit)
+        {
             Pokemon nextPokemon = playerParty.GetHealthyPokemon();
             if (nextPokemon == null)
             {
-
+                //いないならバトル終了
+                state = BattleState.BATTLEOBER;
                 BattleOver();
             }
             else
             {
+                //他にモンスターがいるなら選択画面
                 OpenPartyAction();
             }
         }
         else
         {
-            //それ以外ならenemyMove
-            PlayerAction();
+            //enemyunitならバトル終了
         }
+    }
 
+    //技の実行(実行する側、喰らう側、わざ)
+    IEnumerator RunMove(BattleUnit sourceUnit, BattleUnit targetUnit, Move move)
+    {
+         move.PP--;
+        yield return dialogBox.TypeDialog
+        ($"{sourceUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
+
+        sourceUnit.PlayerAttackAnimation();
+        yield return new WaitForSeconds(0.4f);
+        targetUnit.PlayerHitAnimation();
+        yield return new WaitForSeconds(0.4f);
+        //ダメージ計算
+        DamageDetails damageDetails = targetUnit.Pokemon.TakeDamage(move, sourceUnit.Pokemon);
+        //HPの描画 
+        yield return targetUnit.Hud.UpdateHP();
+        yield return ShowDamageDetails(damageDetails);
+
+        //戦闘不能ならメッセージ
+        if (damageDetails.Fainted)
+        {
+            yield return dialogBox.TypeDialog
+        ($"{targetUnit.Pokemon.Base.Name}はたおれた!!");
+            targetUnit.PlayerFaintAnimation();
+            yield return new WaitForSeconds(0.5f);
+            CheckForBattleOver(targetUnit);
+        }
     }
 
     IEnumerator ShowDamageDetails(DamageDetails damageDetails)
@@ -189,11 +182,11 @@ public class BattleSystem : MonoBehaviour
 
     public void HundleUpdate()
     {
-        if (state == BattleState.PLAYERACTION)
+        if (state == BattleState.ACTIONSELECTION)
         {
             HundleActionSelection();
         }
-        else if (state == BattleState.PLAYERMOVE)
+        else if (state == BattleState.MOVESELECTION)
         {
             HundleMoveSelection();
         }
@@ -237,7 +230,7 @@ public class BattleSystem : MonoBehaviour
         {
             if (currentAction == 0)
             {
-                PlayerMove();
+                Moveselection();
             }
             if (currentAction == 2)
             {
@@ -276,14 +269,14 @@ public class BattleSystem : MonoBehaviour
             //・ダイアログ復活
             dialogBox.EnableDialogText(true);
             //技決定の処理
-            StartCoroutine(PerformPlayerMove());
+            StartCoroutine(PlayerMove());
         }
         //キャンセル
         if (Input.GetKeyDown(KeyCode.X))
         {
             dialogBox.EnableMoveSelector(false);
             dialogBox.EnableDialogText(true);
-            PlayerAction();
+            ActionSelection();
         }
     }
 
@@ -340,9 +333,9 @@ public class BattleSystem : MonoBehaviour
         {
             //ポケモン選択画面を消したい
             partyScreen.gameObject.SetActive(false);
-            PlayerAction();
+            ActionSelection();
         }
-        
+
     }
 
     IEnumerator SwitchPokemon(Pokemon newPokemon)
@@ -366,12 +359,10 @@ public class BattleSystem : MonoBehaviour
         //モンスターの生成と描画
         playerUnit.SetUp(newPokemon);//playerの戦闘可能なpokemonをセット
         yield return new WaitForSeconds(0.6f);
-        //Hudの描画
-        playerHud.SetData(playerUnit.Pokemon);
         dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
         if (fainted)
         {
-            PlayerAction();
+            ActionSelection();
         }
         else
         {
