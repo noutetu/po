@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 [CreateAssetMenu]
@@ -60,6 +61,8 @@ public class MoveEffects
 {
     [SerializeField] List<StatBoost> boosts;
     public List<StatBoost> Boosts { get => boosts; }
+    [SerializeField] ConditionID status;
+    public ConditionID Status { get => status; }
 }
 
 [System.Serializable]

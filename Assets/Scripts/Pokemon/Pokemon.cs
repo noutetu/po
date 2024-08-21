@@ -28,6 +28,9 @@ public class Pokemon
     public Dictionary<Stat, int> StatBoosts { get; set; }
     public int HP { get; set; }
 
+    //状態異常を入れる変数
+     public Condition Status {get;private set;} 
+     
     //ログを溜めておく変数を作る：出し入れが簡単なリスト
     public Queue<string>StatusChanges { get; private set; }
 
@@ -120,6 +123,13 @@ public class Pokemon
 
 
         return statValue;
+    }
+    //状態異常を受けた時に呼び出す
+    public void SetStatus(ConditionID conditionID)
+    {
+        Status = ConditionDB.conditions[conditionID];
+        //ログに追加
+        StatusChanges.Enqueue($"{Base.Name}{Status.StartMessage}");
     }
 
 
