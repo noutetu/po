@@ -28,11 +28,24 @@ public class Pokemon
     public Dictionary<Stat, int> StatBoosts { get; set; }
     public int HP { get; set; }
 
+    //ログを溜めておく変数を作る：出し入れが簡単なリスト
+    public Queue<string>StatusChanges { get; private set; }
+
+    Dictionary<Stat,string> StatDic = new Dictionary<Stat, string>()
+    {
+        {Stat.Attack, "こうげき"},
+        {Stat.Defence, "ぼうぎょ"},
+        {Stat.SpAttack, "とくこう"},
+        {Stat.SpDefence, "とくぼう"},
+        {Stat.Speed, "すばやさ"},
+    } ;
+
+
     //コンストラクタ
     public void Init()
     {
         Moves = new List<Move>();
-
+        StatusChanges = new Queue<string>();
 
         //使える技の設定:覚える技のレベル以上なら、リストに追加 
         foreach (LearnableMove learnableMove in Base.LearnableMoves)
@@ -52,7 +65,11 @@ public class Pokemon
         }
         CalculateStats();
         HP = MaxHP;
+        ResetStatBoost();
+    }
 
+    void ResetStatBoost()
+    {
         StatBoosts = new Dictionary<Stat, int>()
         {
 
@@ -62,6 +79,11 @@ public class Pokemon
                 {Stat.SpDefence,0},
                 {Stat.Speed,0},
         };
+    }
+
+    public void OnBattleOver()
+    {
+        ResetStatBoost();
     }
 
     void CalculateStats()
@@ -111,6 +133,15 @@ public class Pokemon
             //何段階
             int boost = statBoost.boost;
             StatBoosts[stat] = Mathf.Clamp(StatBoosts[stat] + boost, -6,6);
+
+            if(boost > 0)
+            {
+                StatusChanges.Enqueue($"{Base.Name}の{StatDic[stat]}が上がった");
+            }
+            if(boost < 0)
+            {
+                StatusChanges.Enqueue($"{Base.Name}の{StatDic[stat]}が下がった");
+            }
         }
     }
 

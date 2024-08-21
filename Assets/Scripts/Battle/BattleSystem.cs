@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using Unity.Mathematics;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,7 +14,7 @@ public enum BattleState
     PERFROMMOVE,
     BUSY,
     PARTYSCREEN,//ポケモン選択状態
-    BATTLEOBER,//バトル終了
+    BATTLEOVER,//バトル終了
 }
 
 public class BattleSystem : MonoBehaviour
@@ -27,7 +28,7 @@ public class BattleSystem : MonoBehaviour
     int currentMove;// 0:左上, 1:右上, 2:左下, 3:右下
     int currentMember;
     BattleState state;
-    public UnityAction BattleOver;
+    public UnityAction OnBattleOver;
 
 
     //これらの変数をどこから取得する
@@ -119,11 +120,7 @@ public class BattleSystem : MonoBehaviour
         {
             Pokemon nextPokemon = playerParty.GetHealthyPokemon();
             if (nextPokemon == null)
-            {
-                //いないならバトル終了
-                state = BattleState.BATTLEOBER;
-                BattleOver();
-            }
+            { BattleOver(); }
             else
             {
                 //他にモンスターがいるなら選択画面
@@ -132,9 +129,19 @@ public class BattleSystem : MonoBehaviour
         }
         else
         {
-            //enemyunitならバトル終了
+            BattleOver();
         }
     }
+
+    void BattleOver()
+    {
+        //enemyunitならバトル終了
+        state = BattleState.BATTLEOVER;
+        playerParty.Pokemons.ForEach((p) => p.OnBattleOver());
+        OnBattleOver();
+
+    }
+
 
     //技の実行(実行する側、喰らう側、わざ)
     IEnumerator RunMove(BattleUnit sourceUnit, BattleUnit targetUnit, Move move)
@@ -151,9 +158,9 @@ public class BattleSystem : MonoBehaviour
         if (move.Base.Category == MoveCategory.Stat)
         {
             MoveEffects effects = move.Base.Effects;
-            if(effects.Boosts != null)
+            if (effects.Boosts != null)
             {
-                if(move.Base.Target == MoveTarget.Self)
+                if (move.Base.Target == MoveTarget.Self)
                 {
                     //自身に対してステータス変化
                     sourceUnit.Pokemon.ApplyBoosts(effects.Boosts);
@@ -164,6 +171,8 @@ public class BattleSystem : MonoBehaviour
                     targetUnit.Pokemon.ApplyBoosts(effects.Boosts);
                 }
             }
+            yield return ShowStatusChanges((sourceUnit.Pokemon));
+            yield return ShowStatusChanges((targetUnit.Pokemon));
         }
         else
         {
@@ -184,6 +193,17 @@ public class BattleSystem : MonoBehaviour
             targetUnit.PlayerFaintAnimation();
             yield return new WaitForSeconds(0.5f);
             CheckForBattleOver(targetUnit);
+        }
+    }
+
+    //ステータス変化のログを表示する関数
+    IEnumerator ShowStatusChanges(Pokemon pokemon)
+    {
+        //Queの中身がなくなるまで繰り返す
+        while (pokemon.StatusChanges.Count > 0)
+        {
+            string message = pokemon.StatusChanges.Dequeue();
+            yield return dialogBox.TypeDialog(message);
         }
     }
 
