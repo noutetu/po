@@ -132,7 +132,7 @@ public class BattleSystem : MonoBehaviour
         Move move = enemyUnit.Pokemon.GetRandomMove();
         move.PP--;
         yield return dialogBox.TypeDialog
-        ($"{enemyUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
+        ($"相手の{enemyUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
 
         enemyUnit.PlayerAttackAnimation();
         yield return new WaitForSeconds(0.4f);
@@ -151,7 +151,7 @@ public class BattleSystem : MonoBehaviour
         ($"{playerUnit.Pokemon.Base.Name}はたおれた!!");
             playerUnit.PlayerFaintAnimation();
             yield return new WaitForSeconds(0.5f);
-            //戦えるポケモンがいるなら、次のポケモンをセットして自分のターンにする
+            //戦えるポケモンがいるなら、選択画面を表示
             Pokemon nextPokemon = playerParty.GetHealthyPokemon();
             if (nextPokemon == null)
             {
@@ -160,17 +160,7 @@ public class BattleSystem : MonoBehaviour
             }
             else
             {
-                yield return dialogBox.TypeDialog
-                ($"ゆけっ！！{nextPokemon.Base.Name}!!!");
-                yield return new WaitForSeconds(0.3f);
-                //nextをセット
-                //モンスターの生成と描画
-                playerUnit.SetUp(nextPokemon);//playerの戦闘可能なpokemonをセット
-                yield return new WaitForSeconds(0.6f);
-                //Hudの描画
-                playerHud.SetData(playerUnit.Pokemon);
-                dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
-                PlayerAction();
+                OpenPartyAction();
             }
         }
         else
@@ -207,7 +197,7 @@ public class BattleSystem : MonoBehaviour
         {
             HundleMoveSelection();
         }
-        else if(state == BattleState.PARTYSCREEN)
+        else if (state == BattleState.PARTYSCREEN)
         {
             HundlePartySelection();
         }
@@ -236,8 +226,8 @@ public class BattleSystem : MonoBehaviour
             currentAction -= 2;
         }
 
-        currentAction = Mathf.Clamp(currentAction,0,3);
-        
+        currentAction = Mathf.Clamp(currentAction, 0, 3);
+
 
         //色をつけてどちらを選んでいるか管理する
 
@@ -274,7 +264,7 @@ public class BattleSystem : MonoBehaviour
         {
             currentMove -= 2;
         }
-        currentMove = Mathf.Clamp(currentMove,0,playerUnit.Pokemon.Moves.Count-1);
+        currentMove = Mathf.Clamp(currentMove, 0, playerUnit.Pokemon.Moves.Count - 1);
 
         dialogBox.UpdateMoveSelection(currentMove, playerUnit.Pokemon.Moves[currentMove]);
 
@@ -308,7 +298,7 @@ public class BattleSystem : MonoBehaviour
         {
             currentMember -= 2;
         }
-        currentMember = Mathf.Clamp(currentMember,0,playerParty.Pokemons.Count-1);
+        currentMember = Mathf.Clamp(currentMember, 0, playerParty.Pokemons.Count - 1);
 
         //選択中のモンスター名に色をつける
         partyScreen.UpdateMemberSelection(currentMember);
@@ -316,12 +306,68 @@ public class BattleSystem : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Z))
         {
             //モンスター決定
+            Pokemon selectedMember = playerParty.Pokemons[currentMember];
+
+            //入れ替える'現在のキャラと戦闘不能は入れ替えることはできない
+
+            if (selectedMember.HP <= 0)
+            {
+                partyScreen.SetMessage("そのポケモンは戦えない");
+                return;
+            }
+            if (selectedMember == playerUnit.Pokemon)
+            {
+                partyScreen.SetMessage("すでに場に出ています");
+                return;
+            }
+
+            //ポケモン選択画面を消す
+            partyScreen.gameObject.SetActive(false);
+            //状態をbusyにする
+            state = BattleState.BUSY;
+            //入れ替えの処理をする
+            StartCoroutine(SwitchPokemon(selectedMember));
         }
+
         if (Input.GetKeyDown(KeyCode.X))
         {
-            //モンスター決定
+            //ポケモン選択画面を消したい
             partyScreen.gameObject.SetActive(false);
             PlayerAction();
+        }
+    }
+
+    IEnumerator SwitchPokemon(Pokemon newPokemon)
+    {
+        bool fainted = playerUnit.Pokemon.HP <= 0;
+        if (!fainted)
+        {
+            //元のポケモンを下げる
+            yield return dialogBox.TypeDialog($"戻れ！{playerUnit.Pokemon.Base.Name}");
+            //下げるアニメーション
+            playerUnit.PlayerFaintAnimation();
+            yield return new WaitForSeconds(1.5f);
+
+        }
+
+        //新しいのを出す
+        yield return dialogBox.TypeDialog
+        ($"ゆけっ！！{newPokemon.Base.Name}!!!");
+        yield return new WaitForSeconds(0.3f);
+        //nextをセット
+        //モンスターの生成と描画
+        playerUnit.SetUp(newPokemon);//playerの戦闘可能なpokemonをセット
+        yield return new WaitForSeconds(0.6f);
+        //Hudの描画
+        playerHud.SetData(playerUnit.Pokemon);
+        dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
+        if (fainted)
+        {
+            PlayerAction();
+        }
+        else
+        {
+            StartCoroutine(EnemyMove());
         }
     }
 }
