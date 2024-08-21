@@ -89,9 +89,9 @@ public class BattleSystem : MonoBehaviour
         state = BattleState.PERFROMMOVE;
         //技を決定
         Move move = playerUnit.Pokemon.Moves[currentMove];
-        yield return RunMove(playerUnit,enemyUnit,move);
+        yield return RunMove(playerUnit, enemyUnit, move);
 
-        if(state == BattleState.PERFROMMOVE)
+        if (state == BattleState.PERFROMMOVE)
         {
             StartCoroutine(EnemyMove());
         }
@@ -103,9 +103,9 @@ public class BattleSystem : MonoBehaviour
         //技を決定 =>ランダム
         Move move = enemyUnit.Pokemon.GetRandomMove();
 
-        yield return RunMove(enemyUnit,playerUnit,move);
+        yield return RunMove(enemyUnit, playerUnit, move);
 
-        if(state == BattleState.PERFROMMOVE)
+        if (state == BattleState.PERFROMMOVE)
         {
             ActionSelection();
         }
@@ -139,7 +139,7 @@ public class BattleSystem : MonoBehaviour
     //技の実行(実行する側、喰らう側、わざ)
     IEnumerator RunMove(BattleUnit sourceUnit, BattleUnit targetUnit, Move move)
     {
-         move.PP--;
+        move.PP--;
         yield return dialogBox.TypeDialog
         ($"{sourceUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
 
@@ -147,14 +147,35 @@ public class BattleSystem : MonoBehaviour
         yield return new WaitForSeconds(0.4f);
         targetUnit.PlayerHitAnimation();
         yield return new WaitForSeconds(0.4f);
-        //ダメージ計算
-        DamageDetails damageDetails = targetUnit.Pokemon.TakeDamage(move, sourceUnit.Pokemon);
-        //HPの描画 
-        yield return targetUnit.Hud.UpdateHP();
-        yield return ShowDamageDetails(damageDetails);
+
+        if (move.Base.Category == MoveCategory.Stat)
+        {
+            MoveEffects effects = move.Base.Effects;
+            if(effects.Boosts != null)
+            {
+                if(move.Base.Target == MoveTarget.Self)
+                {
+                    //自身に対してステータス変化
+                }
+                else
+                {
+                    //自身に対してステータス変化
+                }
+            }
+        }
+        else
+        {
+            //ダメージ計算
+            DamageDetails damageDetails = targetUnit.Pokemon.TakeDamage(move, sourceUnit.Pokemon);
+            //HPの描画 
+            yield return targetUnit.Hud.UpdateHP();
+            yield return ShowDamageDetails(damageDetails);
+
+        }
+
 
         //戦闘不能ならメッセージ
-        if (damageDetails.Fainted)
+        if (targetUnit.Pokemon.HP <= 0)
         {
             yield return dialogBox.TypeDialog
         ($"{targetUnit.Pokemon.Base.Name}はたおれた!!");

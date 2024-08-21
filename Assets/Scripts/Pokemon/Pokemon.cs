@@ -49,7 +49,12 @@ public class Pokemon
                 break;
             }
         }
+    }
 
+
+    public void ApplyBoosts(List<StatBoost> statBoosts)
+    {
+        //ステータス変化を反映
     }
 
     //レベルに応じたステータスを返すもの
@@ -117,7 +122,7 @@ public class Pokemon
         float attack = attacker.Attack;
         float defence = attacker.Defence;
 
-        if(move.Base.isSpecial)
+        if(move.Base.Category == MoveCategory.Special)
         {
             attack = attacker.SpAttack;
             defence = SpDefence;
@@ -161,3 +166,4 @@ public class DamageDetails
     public float Critical{ get; set; }
     public float TypeEffectivenss { get; set; }
 }
+

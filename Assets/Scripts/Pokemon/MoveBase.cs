@@ -21,28 +21,50 @@ public class MoveBase : ScriptableObject
     //タイプ
     [SerializeField] PokemonType type;
 
-    //他のファイルから参照するためにプロパティを使う
-    public string Name {get => name;}
-    public string Description {get => description;}
-    public int Power{get => power;}
-    public int Accuracy{get => accuracy;}
-    public int PP{get => pp;}
-    public PokemonType Type{get =>type;}
+    [SerializeField] MoveTarget target;
 
-    //特殊技
-    public bool isSpecial
-    {
-        get
-        {
-            if(type == PokemonType.Fire || type == PokemonType.Water ||type == PokemonType.Grass ||type ==PokemonType.Ice
-            ||type == PokemonType.Electric ||type == PokemonType.Dragon)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
+    [SerializeField] MoveCategory category;
+
+    //どのステータスをどの程度変化させるかのリスト
+    [SerializeField] MoveEffects effects;
+
+    public MoveEffects Effects { get => effects; }
+    public MoveTarget Target { get => target; }
+    public MoveCategory Category { get => category; }
+    //他のファイルから参照するためにプロパティを使う
+    public string Name { get => name; }
+    public string Description { get => description; }
+    public int Power { get => power; }
+    public int Accuracy { get => accuracy; }
+    public int PP { get => pp; }
+    public PokemonType Type { get => type; }
+
+
+}
+
+public enum MoveCategory
+{
+    Physical,
+    Special,
+    Stat,
+}
+public enum MoveTarget
+{
+    Foe,
+    Self,
+}
+
+
+[System.Serializable]
+public class MoveEffects
+{
+    [SerializeField] List<StatBoost> boosts;
+    public List<StatBoost> Boosts { get => boosts; }
+}
+
+[System.Serializable]
+public class StatBoost
+{
+    public Stats stat; //ポケモンクラスで定義した６つのステータスを格納するクラス
+    public int boost; //どの程度変化するか
 }

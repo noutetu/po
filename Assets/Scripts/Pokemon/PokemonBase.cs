@@ -82,6 +82,16 @@ public enum PokemonType
 
 }
 
+public enum Stats
+{
+    Attack,
+    Defence,
+    SpAttack,
+    SpDefence,
+    Speed,
+    MaxHP,
+}
+
 
 public class TypeChart
 {
