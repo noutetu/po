@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Unity.Collections;
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 
@@ -10,26 +12,25 @@ using UnityEngine.PlayerLoop;
 [System.Serializable]
 public class Pokemon
 {
-
-    
-
     //インスペクターからデータを設定できるようにする
     [SerializeField] int level;
     [SerializeField] PokemonBase pokemonBase;
 
     //ベースとなるデータ
     public PokemonBase Base { get => pokemonBase; }
-    public int Level { get => level;}
+    public int Level { get => level; }
     //使える技のリスト
     public List<Move> Moves { get; set; }
 
-    //
+    //初期ステータス
+    public Dictionary<Stat, int> Stats { get; set; }
+    //ステータス変化
+    public Dictionary<Stat, int> StatBoosts { get; set; }
     public int HP { get; set; }
 
     //コンストラクタ
     public void Init()
-    {   
-        HP = MaxHP;
+    {
         Moves = new List<Move>();
 
 
@@ -49,12 +50,68 @@ public class Pokemon
                 break;
             }
         }
+        CalculateStats();
+        HP = MaxHP;
+
+        StatBoosts = new Dictionary<Stat, int>()
+        {
+
+                {Stat.Attack,0},
+                {Stat.Defence,0},
+                {Stat.SpAttack,0},
+                {Stat.SpDefence,0},
+                {Stat.Speed,0},
+        };
+    }
+
+    void CalculateStats()
+    {
+        Stats = new Dictionary<Stat, int>();
+        Stats.Add(Stat.Attack, Mathf.FloorToInt((Base.Attack * Level) / 100f) + 5);
+        Stats.Add(Stat.Defence, Mathf.FloorToInt((Base.Defence * Level) / 100f) + 5);
+        Stats.Add(Stat.SpAttack, Mathf.FloorToInt((Base.SpAttack * Level) / 100f) + 5);
+        Stats.Add(Stat.SpDefence, Mathf.FloorToInt((Base.SpAttack * Level) / 100f) + 5);
+        Stats.Add(Stat.Speed, Mathf.FloorToInt((Base.Speed * Level) / 100f) + 5);
+        MaxHP = Mathf.FloorToInt((Base.MaxHP * Level) / 100f) + 10 + Level;
+    }
+
+    int GetStat(Stat stat)
+    {
+        int statValue = Stats[stat];
+
+        int boosts = StatBoosts[stat];
+        float[] boostValue = new float[] { 1, 1.5f, 2f, 2.5f, 3f, 3.5f, 4f };
+
+        if (boosts >= 0)
+        {
+
+            //強化なら
+            statValue = Mathf.FloorToInt(statValue * boostValue[boosts]);
+        }
+        else
+        {
+
+            //弱体化なら
+            statValue = Mathf.FloorToInt(statValue / boostValue[-boosts]);
+
+        }
+
+
+        return statValue;
     }
 
 
     public void ApplyBoosts(List<StatBoost> statBoosts)
     {
         //ステータス変化を反映
+        foreach(StatBoost statBoost in statBoosts)
+        {
+            //どのステータスを
+            Stat stat = statBoost.stat;
+            //何段階
+            int boost = statBoost.boost;
+            StatBoosts[stat] = Mathf.Clamp(StatBoosts[stat] + boost, -6,6);
+        }
     }
 
     //レベルに応じたステータスを返すもの
@@ -70,39 +127,39 @@ public class Pokemon
     //攻撃
     public int Attack
     {
-        get { return Mathf.FloorToInt((Base.Attack * Level) / 100f) + 5; }
+        get { return GetStat(Stat.Attack); }
     }
     //防御
     public int Defence
     {
-        get { return Mathf.FloorToInt((Base.Defence * Level) / 100f) + 5; }
+        get { return GetStat(Stat.Defence); }
     }
     //特攻
     public int SpAttack
     {
-        get { return Mathf.FloorToInt((Base.SpAttack * Level) / 100f) + 5; }
+        get { return GetStat(Stat.SpAttack); }
     }
     //特防
     public int SpDefence
     {
-        get { return Mathf.FloorToInt((Base.SpDefence * Level) / 100f) + 5; }
+        get { return GetStat(Stat.SpDefence); }
     }
     //素早さ
     public int Speed
     {
-        get { return Mathf.FloorToInt((Base.Speed * Level) / 100f) + 5; }
+        get { return GetStat(Stat.Speed); }
     }
     //HP
     public int MaxHP
     {
-        get { return Mathf.FloorToInt((Base.MaxHP * Level) / 100f) + 10 + Level; }
+        get; private set;
     }
 
     public DamageDetails TakeDamage(Move move, Pokemon attacker)
     {
         // クリティカル判定 (6.25% の確率)
         float critical = 1f;
-        if (Random.value * 100 <= 6.25f)
+        if (UnityEngine.Random.value * 100 <= 6.25f)
         {
             critical = 2f;
         }
@@ -110,10 +167,10 @@ public class Pokemon
         // タイプ相性
         float type = TypeChart.GetEffectiveness(move.Base.Type, Base.Type1) *
                      TypeChart.GetEffectiveness(move.Base.Type, Base.Type2);
-        
+
         DamageDetails damageDetails = new DamageDetails
         {
-            Fainted =false,
+            Fainted = false,
             Critical = critical,
             TypeEffectivenss = type,
         };
@@ -122,14 +179,14 @@ public class Pokemon
         float attack = attacker.Attack;
         float defence = attacker.Defence;
 
-        if(move.Base.Category == MoveCategory.Special)
+        if (move.Base.Category == MoveCategory.Special)
         {
             attack = attacker.SpAttack;
             defence = SpDefence;
         }
 
         // 乱数（0.85 〜 1.0）
-        float random = Random.Range(0.85f, 1f);
+        float random = UnityEngine.Random.Range(0.85f, 1f);
 
         // Modifiers の計算
         float modifier = critical * type * random;
@@ -155,7 +212,7 @@ public class Pokemon
 
     public Move GetRandomMove()
     {
-        int r = Random.Range(0, Moves.Count);
+        int r = UnityEngine.Random.Range(0, Moves.Count);
         return Moves[r];
     }
 }
@@ -163,7 +220,7 @@ public class Pokemon
 public class DamageDetails
 {
     public bool Fainted { get; set; }
-    public float Critical{ get; set; }
+    public float Critical { get; set; }
     public float TypeEffectivenss { get; set; }
 }
 

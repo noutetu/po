@@ -65,6 +65,6 @@ public class MoveEffects
 [System.Serializable]
 public class StatBoost
 {
-    public Stats stat; //ポケモンクラスで定義した６つのステータスを格納するクラス
+    public Stat stat; //ポケモンクラスで定義した６つのステータスを格納するクラス
     public int boost; //どの程度変化するか
 }

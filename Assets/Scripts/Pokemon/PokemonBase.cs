@@ -82,7 +82,7 @@ public enum PokemonType
 
 }
 
-public enum Stats
+public enum Stat
 {
     Attack,
     Defence,

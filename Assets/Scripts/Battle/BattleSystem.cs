@@ -156,10 +156,12 @@ public class BattleSystem : MonoBehaviour
                 if(move.Base.Target == MoveTarget.Self)
                 {
                     //自身に対してステータス変化
+                    sourceUnit.Pokemon.ApplyBoosts(effects.Boosts);
                 }
                 else
                 {
-                    //自身に対してステータス変化
+                    //相手に対してステータス変化
+                    targetUnit.Pokemon.ApplyBoosts(effects.Boosts);
                 }
             }
         }
