@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Unity.Collections;
+using Unity.Mathematics;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
@@ -29,19 +30,21 @@ public class Pokemon
     public int HP { get; set; }
 
     //状態異常を入れる変数
-     public Condition Status {get;private set;} 
-     
-    //ログを溜めておく変数を作る：出し入れが簡単なリスト
-    public Queue<string>StatusChanges { get; private set; }
+    public Condition Status { get; private set; }
 
-    Dictionary<Stat,string> StatDic = new Dictionary<Stat, string>()
+    public bool isChangedHP { get; set; }
+
+    //ログを溜めておく変数を作る：出し入れが簡単なリスト
+    public Queue<string> StatusChanges { get; private set; }
+
+    Dictionary<Stat, string> StatDic = new Dictionary<Stat, string>()
     {
         {Stat.Attack, "こうげき"},
         {Stat.Defence, "ぼうぎょ"},
         {Stat.SpAttack, "とくこう"},
         {Stat.SpDefence, "とくぼう"},
         {Stat.Speed, "すばやさ"},
-    } ;
+    };
 
 
     //コンストラクタ
@@ -132,23 +135,29 @@ public class Pokemon
         StatusChanges.Enqueue($"{Base.Name}{Status.StartMessage}");
     }
 
+    //ターン終了時にやりたいこと;状態異常
+    public void OnAfterTurn()
+    {
+        Status?.OnAfterTurn?.Invoke(this);
+    }
+
 
     public void ApplyBoosts(List<StatBoost> statBoosts)
     {
         //ステータス変化を反映
-        foreach(StatBoost statBoost in statBoosts)
+        foreach (StatBoost statBoost in statBoosts)
         {
             //どのステータスを
             Stat stat = statBoost.stat;
             //何段階
             int boost = statBoost.boost;
-            StatBoosts[stat] = Mathf.Clamp(StatBoosts[stat] + boost, -6,6);
+            StatBoosts[stat] = Mathf.Clamp(StatBoosts[stat] + boost, -6, 6);
 
-            if(boost > 0)
+            if (boost > 0)
             {
                 StatusChanges.Enqueue($"{Base.Name}の{StatDic[stat]}が上がった");
             }
-            if(boost < 0)
+            if (boost < 0)
             {
                 StatusChanges.Enqueue($"{Base.Name}の{StatDic[stat]}が下がった");
             }
@@ -236,17 +245,15 @@ public class Pokemon
         float a = (2 * attacker.Level + 10) / 250f;
         float d = a * move.Base.Power * ((float)attack / defence) + 2;
         int damage = Mathf.FloorToInt(d * modifier);
-
-        // HPの減少
-        HP -= damage;
-
-        // ポケモンが倒されたかどうかを返す
-        if (HP <= 0)
-        {
-            HP = 0;
-            damageDetails.Fainted = true;
-        }
+        UpdateHP(damage);
+        
         return damageDetails;
+    }
+    
+    public void UpdateHP(int damage)
+    {
+        HP = Mathf.Clamp(HP - damage, 0 ,MaxHP);
+        isChangedHP = true;
     }
 
 

@@ -193,6 +193,22 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             CheckForBattleOver(targetUnit);
         }
+
+        //ターン終了時
+        //状態異常ダメージを受ける
+        sourceUnit.Pokemon.OnAfterTurn();
+        yield return sourceUnit.Hud.UpdateHP();
+        yield return ShowStatusChanges(sourceUnit.Pokemon);
+
+        //戦闘不能ならメッセージ
+        if (sourceUnit.Pokemon.HP <= 0)
+        {
+            yield return dialogBox.TypeDialog
+        ($"{sourceUnit.Pokemon.Base.Name}はたおれた!!");
+            sourceUnit.PlayerFaintAnimation();
+            yield return new WaitForSeconds(0.5f);
+            CheckForBattleOver(sourceUnit);
+        }
     }
 
     IEnumerator RunMoveEffects(Move move,Pokemon source, Pokemon target)
