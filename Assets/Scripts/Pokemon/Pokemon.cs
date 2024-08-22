@@ -135,6 +135,11 @@ public class Pokemon
         StatusChanges.Enqueue($"{Base.Name}{Status.StartMessage}");
     }
 
+    public void CureStatus()
+    {
+        Status = null;
+    }
+
     //ターン終了時にやりたいこと;状態異常
     public void  OnAfterTurn()
     {

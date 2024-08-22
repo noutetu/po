@@ -57,6 +57,28 @@ public class ConditionDB
             }
         },
 
+        {
+            ConditionID.Freeze,new Condition()
+            {
+                Name = "こおり",
+                StartMessage = "はこおってしまった",
+                OnBeforeMove = (Pokemon pokemon) =>
+                {
+                    //一定確率で技が出せずに自分のターンが終わる
+                    //1,2,3,4が出る中で１が出たら(25%の確率で)
+                    if(Random.Range(1,5) == 1)
+                    {
+
+                        pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}のこおりがとけた");
+                        pokemon.CureStatus();
+                        return true;
+
+                    }
+                    pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}はこおってしまって動けない");
+                    return false;
+                }
+            }
+        },
 
    };
 
