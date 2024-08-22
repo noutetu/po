@@ -684,12 +684,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pokemons:
+  - level: 25
+    pokemonBase: {fileID: 11400000, guid: 5b69f28e081a44165b896a08c4cad4f8, type: 2}
   - level: 19
     pokemonBase: {fileID: 11400000, guid: 425f17fe084f94fcc9d32923e6047752, type: 2}
   - level: 17
     pokemonBase: {fileID: 11400000, guid: 9203996b8cd254d3da98181cae2e8af1, type: 2}
-  - level: 25
-    pokemonBase: {fileID: 11400000, guid: 5b69f28e081a44165b896a08c4cad4f8, type: 2}
 --- !u!1001 &371624643
 PrefabInstance:
   m_ObjectHideFlags: 0

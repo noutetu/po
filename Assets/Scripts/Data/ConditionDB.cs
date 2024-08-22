@@ -93,18 +93,54 @@ public class ConditionDB
                 OnStart = (Pokemon pokemon) =>
                 {
                     //技を受けた最初の時に何ターン眠るか決める
-                    pokemon.SleepTime = Random.Range(1,5);
+                    pokemon.StatusTime = Random.Range(1,5);
                 },
                 OnBeforeMove = (Pokemon pokemon)=>
                 {
-                    if(pokemon.SleepTime <= 0)
+                    if(pokemon.StatusTime <= 0)
                     {
                         pokemon.CureStatus();
                         pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}目を覚ました");
                         return true;
                     }
                     pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}は眠っている");
-                    pokemon.SleepTime --;
+                    pokemon.StatusTime --;
+                    return false;
+                }
+                
+            }
+        },
+
+        {
+            ConditionID.Confusion,new Condition()
+            {
+                Id = ConditionID.Confusion,
+                Name = "こんらん",
+                StartMessage = "はこんらんした",
+                OnStart = (Pokemon pokemon) =>
+                {
+                    //技を受けた最初の時に何ターン眠るか決める
+                    pokemon.VolatileStatusTime = Random.Range(1,5);
+                },
+                OnBeforeMove = (Pokemon pokemon)=>
+                {
+                    if(pokemon.VolatileStatusTime <= 0)
+                    {
+                        pokemon.CureVolatileStatus();
+                        pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}のこんらんがとけた");
+                        return true;
+                    }
+
+                    pokemon.VolatileStatusTime --;
+                    if(Random.Range(1,3) == 1)
+                    {
+                        pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}はこんらんしている");
+                        return true;
+                    }
+                    pokemon.UpdateHP(pokemon.MaxHP/8);
+                    pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}はこんらんしている");
+                    pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}は自分を攻撃した");
+                    pokemon.StatusTime --;
                     return false;
                 }
                 
@@ -123,4 +159,5 @@ public enum ConditionID
     Sleep,       //眠り
     Paralysis,   //まひ
     Freeze,      //こおり
+    Confusion,   //混乱
 }

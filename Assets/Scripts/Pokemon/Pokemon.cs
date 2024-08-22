@@ -34,7 +34,11 @@ public class Pokemon
     public Condition Status { get; private set; }
     public bool isChangedHP { get; set; }
 
-    public int SleepTime { get; set; }
+    public int StatusTime { get; set; }
+
+    //バトル終了時に解除される
+    public Condition VolatileStatus { get; set; }
+    public int VolatileStatusTime { get; set; }
 
     //ログを溜めておく変数を作る：出し入れが簡単なリスト
     public Queue<string> StatusChanges { get; private set; }
@@ -79,6 +83,9 @@ public class Pokemon
         CalculateStats();
         HP = MaxHP;
         ResetStatBoost();
+
+        Status = null;
+        VolatileStatus = null;
     }
 
     void ResetStatBoost()
@@ -97,6 +104,8 @@ public class Pokemon
     public void OnBattleOver()
     {
         ResetStatBoost();
+        VolatileStatus = null;
+        
     }
 
     void CalculateStats()
@@ -140,7 +149,7 @@ public class Pokemon
         if(Status != null)
         {
             //すでに状態異常なら他の状態異常にならない
-            
+
             return;
         }
         Status = ConditionDB.conditions[conditionID];
@@ -158,19 +167,53 @@ public class Pokemon
         Status = null;
     }
 
+    public void SetVolatileStatus(ConditionID conditionID)
+    {
+        if(Status != null)
+        {
+            //すでに状態異常なら他の状態異常にならない
+
+            return;
+        }
+        VolatileStatus = ConditionDB.conditions[conditionID];
+        VolatileStatus?.OnStart?.Invoke(this);
+        //ログに追加
+        StatusChanges.Enqueue($"{Base.Name}{VolatileStatus.StartMessage}");
+    }
+
+    public void CureVolatileStatus()
+    {
+        VolatileStatus = null;
+    }
+
+
     //ターン終了時にやりたいこと;状態異常
     public void  OnAfterTurn()
     {
         Status?.OnAfterTurn?.Invoke(this);
+        VolatileStatus?.OnAfterTurn?.Invoke(this);
     }
 
     public bool OnBeforeTurn()
     {
+        bool canRunMove = true;
+        //状態異常について
         if(Status?.OnBeforeMove != null)
         {
-            return Status.OnBeforeMove(this);
+            if(Status.OnBeforeMove(this) == false)
+            {
+                canRunMove = false;
+            }
         }
-        return true;
+        //混乱系の状態異常について
+        if(VolatileStatus?.OnBeforeMove != null)
+        {
+            if(VolatileStatus.OnBeforeMove(this) == false)
+            {
+                canRunMove = false;
+            }
+        }
+        return canRunMove;
     }
 
 

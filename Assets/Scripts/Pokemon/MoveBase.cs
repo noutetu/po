@@ -62,9 +62,10 @@ public class MoveEffects
     [SerializeField] List<StatBoost> boosts;
     public List<StatBoost> Boosts { get => boosts; }
     [SerializeField] ConditionID status;
-    public ConditionID Status { get => status; }
+    public ConditionID Status { get => status; }//戦闘終了時に回復しない
+    [SerializeField] ConditionID volatileStatus;
+    public ConditionID VolatileStatus { get => volatileStatus; }//戦闘終了時に回復する
 }
-
 [System.Serializable]
 public class StatBoost
 {

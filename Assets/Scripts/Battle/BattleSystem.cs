@@ -165,6 +165,10 @@ public class BattleSystem : MonoBehaviour
         yield return ShowStatusChanges(sourceUnit.Pokemon);
         if(!canRunMove)
         {
+            //技が使えない場合でダメージを受ける場合がある
+            yield return sourceUnit.Hud.UpdateHP();
+            CheckForBattleOver(targetUnit);
+            
             yield break;
         }
 
@@ -239,6 +243,10 @@ public class BattleSystem : MonoBehaviour
             if(effects.Status != ConditionID.None)
             {
                 target.SetStatus(effects.Status);
+            }
+            if(effects.VolatileStatus != ConditionID.None)
+            {
+                target.SetVolatileStatus(effects.VolatileStatus);
             }
             yield return ShowStatusChanges((source));
             yield return ShowStatusChanges((target));
