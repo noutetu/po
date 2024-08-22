@@ -10,11 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0dd8c2e410c7341628b16b456dc38e21, type: 3}
-  m_Name: Move7
+  m_Name: BurnPowder
   m_EditorClassIdentifier: 
-  name: 
+  name: "\u706B\u306E\u7C89"
   description: 
-  power: 40
+  power: 0
   accuracy: 100
   pp: 40
-  type: 1
+  type: 2
+  target: 0
+  category: 2
+  effects:
+    boosts:
+    - stat: 0
+      boost: 0
+    status: 2

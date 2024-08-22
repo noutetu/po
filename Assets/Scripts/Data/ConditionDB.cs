@@ -23,7 +23,23 @@ public class ConditionDB
                     pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}はどくのダメージを受けた");
                 }
             }
+        },
+        {
+            ConditionID.Burn,new Condition()
+            {
+                Name = "やけど",
+                StartMessage = "はやけどをおった",
+                OnAfterTurn = (Pokemon pokemon) =>
+                {
+                    //やけどダメージを与える
+                    pokemon.UpdateHP(pokemon.MaxHP / 16);
+                    //メッセージを表示する
+                    pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}はやけどのダメージを受けた");
+                }
+            }
         }
+
+        
    };
 
 }
