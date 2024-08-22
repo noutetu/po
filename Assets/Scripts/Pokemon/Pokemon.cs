@@ -136,9 +136,18 @@ public class Pokemon
     }
 
     //ターン終了時にやりたいこと;状態異常
-    public void OnAfterTurn()
+    public void  OnAfterTurn()
     {
         Status?.OnAfterTurn?.Invoke(this);
+    }
+
+    public bool OnBeforeTurn()
+    {
+        if(Status?.OnBeforeMove != null)
+        {
+            return Status.OnBeforeMove(this);
+        }
+        return true;
     }
 
 

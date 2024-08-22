@@ -21,5 +21,6 @@ public class Condition
     public string StartMessage{ get; set;}
 
     public Action<Pokemon> OnAfterTurn;
+    public Func<Pokemon,bool> OnBeforeMove;
 
 }

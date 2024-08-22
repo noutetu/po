@@ -37,9 +37,27 @@ public class ConditionDB
                     pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}はやけどのダメージを受けた");
                 }
             }
-        }
+        },
+        {
+            ConditionID.Paralysis,new Condition()
+            {
+                Name = "まひ",
+                StartMessage = "はまひした",
+                OnBeforeMove = (Pokemon pokemon) =>
+                {
+                    //一定確率で技が出せずに自分のターンが終わる
+                    //1,2,3,4が出る中で１が出たら(25%の確率で)
+                    if(Random.Range(1,5) == 1)
+                    {
+                        pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}はしびれて動けない");
+                        return false;
+                    }
+                    return true;
+                }
+            }
+        },
 
-        
+
    };
 
 }

@@ -160,6 +160,14 @@ public class BattleSystem : MonoBehaviour
     //技の実行(実行する側、喰らう側、わざ)
     IEnumerator RunMove(BattleUnit sourceUnit, BattleUnit targetUnit, Move move)
     {
+        //まひなら技を出せない
+        bool canRunMove = sourceUnit.Pokemon.OnBeforeTurn();//技を使うポケモン(sourceUnit)が動けるかどうか
+        yield return ShowStatusChanges(sourceUnit.Pokemon);
+        if(!canRunMove)
+        {
+            yield break;
+        }
+
         move.PP--;
         yield return dialogBox.TypeDialog
         ($"{sourceUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
