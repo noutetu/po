@@ -7,6 +7,7 @@ using Unity.Mathematics;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
+using UnityEngine.UIElements;
 
 //レベルに応じたステータスの違うモンスターを生成するクラス
 //ただしデータのみ
@@ -31,11 +32,14 @@ public class Pokemon
 
     //状態異常を入れる変数
     public Condition Status { get; private set; }
-
     public bool isChangedHP { get; set; }
+
+    public int SleepTime { get; set; }
 
     //ログを溜めておく変数を作る：出し入れが簡単なリスト
     public Queue<string> StatusChanges { get; private set; }
+
+
 
     Dictionary<Stat, string> StatDic = new Dictionary<Stat, string>()
     {
@@ -131,6 +135,7 @@ public class Pokemon
     public void SetStatus(ConditionID conditionID)
     {
         Status = ConditionDB.conditions[conditionID];
+        Status?.OnStart?.Invoke(this);
         //ログに追加
         StatusChanges.Enqueue($"{Base.Name}{Status.StartMessage}");
     }

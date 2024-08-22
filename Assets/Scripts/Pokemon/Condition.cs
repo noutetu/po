@@ -16,11 +16,12 @@ public class Condition
 {
     public string Name { get; set; }
     public string Description { get; set; }
-
+    
     //状態異常時のメッセージ
     public string StartMessage{ get; set;}
 
     public Action<Pokemon> OnAfterTurn;
     public Func<Pokemon,bool> OnBeforeMove;
+    public Action<Pokemon> OnStart;
 
 }

@@ -80,6 +80,32 @@ public class ConditionDB
             }
         },
 
+        {
+            ConditionID.Sleep,new Condition()
+            {
+                Name = "ねむり",
+                StartMessage = "は眠ってしまった",
+                OnStart = (Pokemon pokemon) =>
+                {
+                    //技を受けた最初の時に何ターン眠るか決める
+                    pokemon.SleepTime = Random.Range(1,5);
+                },
+                OnBeforeMove = (Pokemon pokemon)=>
+                {
+                    if(pokemon.SleepTime <= 0)
+                    {
+                        pokemon.CureStatus();
+                        pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}目を覚ました");
+                        return true;
+                    }
+                    pokemon.StatusChanges.Enqueue($"{pokemon.Base.Name}は眠っている");
+                    pokemon.SleepTime --;
+                    return false;
+                }
+                
+            }
+        },
+
    };
 
 }
