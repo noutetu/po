@@ -10,6 +10,7 @@ public class ConditionDB
         {
             ConditionID.Poison,new Condition()
             {
+                Id = ConditionID.Poison,
                 Name = "どく",
                 StartMessage = "はどくになった",
                 //OnAfterTurn = Poison,
@@ -27,6 +28,7 @@ public class ConditionDB
         {
             ConditionID.Burn,new Condition()
             {
+                Id = ConditionID.Burn,
                 Name = "やけど",
                 StartMessage = "はやけどをおった",
                 OnAfterTurn = (Pokemon pokemon) =>
@@ -41,6 +43,7 @@ public class ConditionDB
         {
             ConditionID.Paralysis,new Condition()
             {
+                Id = ConditionID.Paralysis,
                 Name = "まひ",
                 StartMessage = "はまひした",
                 OnBeforeMove = (Pokemon pokemon) =>
@@ -60,6 +63,7 @@ public class ConditionDB
         {
             ConditionID.Freeze,new Condition()
             {
+                Id = ConditionID.Freeze,
                 Name = "こおり",
                 StartMessage = "はこおってしまった",
                 OnBeforeMove = (Pokemon pokemon) =>
@@ -83,6 +87,7 @@ public class ConditionDB
         {
             ConditionID.Sleep,new Condition()
             {
+                Id = ConditionID.Sleep,
                 Name = "ねむり",
                 StartMessage = "は眠ってしまった",
                 OnStart = (Pokemon pokemon) =>

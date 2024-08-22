@@ -39,6 +39,9 @@ public class Pokemon
     //ログを溜めておく変数を作る：出し入れが簡単なリスト
     public Queue<string> StatusChanges { get; private set; }
 
+    //ステータス変化が起こった時に実行したいことを登録する
+    public System.Action OnStatusChange;
+
 
 
     Dictionary<Stat, string> StatDic = new Dictionary<Stat, string>()
@@ -134,14 +137,24 @@ public class Pokemon
     //状態異常を受けた時に呼び出す
     public void SetStatus(ConditionID conditionID)
     {
+        if(Status != null)
+        {
+            //すでに状態異常なら他の状態異常にならない
+            
+            return;
+        }
         Status = ConditionDB.conditions[conditionID];
         Status?.OnStart?.Invoke(this);
         //ログに追加
         StatusChanges.Enqueue($"{Base.Name}{Status.StartMessage}");
+
+        OnStatusChange?.Invoke();
+        
     }
 
     public void CureStatus()
     {
+        OnStatusChange?.Invoke();
         Status = null;
     }
 
