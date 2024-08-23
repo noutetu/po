@@ -19,6 +19,14 @@ public enum BattleState
     BATTLEOVER,//バトル終了
 }
 
+public enum BattleAction
+{
+    MOVE,
+    SWITCHPOKEMON,
+    ITEM,
+    RUN,
+}
+
 public class BattleSystem : MonoBehaviour
 {
     [SerializeField] BattleUnit playerUnit;
@@ -30,6 +38,7 @@ public class BattleSystem : MonoBehaviour
     int currentMove;// 0:左上, 1:右上, 2:左下, 3:右下
     int currentMember;
     BattleState state;
+    BattleState? preState; // ?はnullを含む
     public UnityAction OnBattleOver;
 
 
@@ -86,41 +95,72 @@ public class BattleSystem : MonoBehaviour
         partyScreen.SetPartyData(playerParty.Pokemons);
     }
 
-    IEnumerator RunTurns()
+    IEnumerator RunTurns(BattleAction battleAction)
     {
         state = BattleState.RUNNINGTURN;
-        //それぞれの技の決定
-        playerUnit.Pokemon.CurrentMove = playerUnit.Pokemon.Moves[currentMove];
-        enemyUnit.Pokemon.CurrentMove = enemyUnit.Pokemon.GetRandomMove();
-
-        //先行の決定
-        BattleUnit firstUnit = playerUnit;
-        BattleUnit secondUnit = enemyUnit;
-        if (playerUnit.Pokemon.Speed < enemyUnit.Pokemon.Speed)
+        //技コマンドの選択-----------------------------------------------------------
+        if (battleAction == BattleAction.MOVE)
         {
-            firstUnit = enemyUnit;
-            secondUnit = playerUnit;
+            //それぞれの技の決定
+            playerUnit.Pokemon.CurrentMove = playerUnit.Pokemon.Moves[currentMove];
+            enemyUnit.Pokemon.CurrentMove = enemyUnit.Pokemon.GetRandomMove();
+
+            //先行の決定
+            BattleUnit firstUnit = playerUnit;
+            BattleUnit secondUnit = enemyUnit;
+            if (playerUnit.Pokemon.Speed < enemyUnit.Pokemon.Speed)
+            {
+                firstUnit = enemyUnit;
+                secondUnit = playerUnit;
+            }
+
+            //先行の処理
+            yield return RunMove(firstUnit, secondUnit, firstUnit.Pokemon.CurrentMove);
+            yield return RunAfterTurn(firstUnit);
+            if (state == BattleState.BATTLEOVER)
+            {
+                yield break;
+            }
+
+            if (secondUnit.Pokemon.HP > 0)
+            {
+                //後攻の処理
+                yield return RunMove(secondUnit, firstUnit, secondUnit.Pokemon.CurrentMove);
+                yield return RunAfterTurn(secondUnit);
+                if (state == BattleState.BATTLEOVER)
+                {
+                    yield break;
+                }
+            }
         }
-
-        //先行の処理
-        yield return RunMove(firstUnit, secondUnit, firstUnit.Pokemon.CurrentMove);
-        yield return RunAfterTurn(firstUnit);
-        if (state == BattleState.BATTLEOVER)
+        //------------------------------------------------------------------------------
+        else
         {
-            yield break;
-        }
+            //手持ちコマンドの選択-----------------------------------------------------------
+            if (battleAction == BattleAction.SWITCHPOKEMON)
+            {
+                //入れ替えるモンスターの決定
+                Pokemon selectedMember = playerParty.Pokemons[currentMember];
 
-        if (secondUnit.Pokemon.HP > 0)
-        {
-            //後攻の処理
-            yield return RunMove(secondUnit, firstUnit, secondUnit.Pokemon.CurrentMove);
-            yield return RunAfterTurn(secondUnit);
+                //入れ替え開始
+                state = BattleState.BUSY;
+                yield return SwitchPokemon(selectedMember);
+            }
+            //アイテムコマンドの選択-----------------------------------------------------------
+            else if (battleAction == BattleAction.ITEM)
+            {
+
+            }
+            //　敵の行動----------------------------------------------------------------------
+            enemyUnit.Pokemon.CurrentMove = enemyUnit.Pokemon.GetRandomMove();
+            yield return RunMove(enemyUnit, playerUnit, enemyUnit.Pokemon.CurrentMove);
+            yield return RunAfterTurn(enemyUnit);
             if (state == BattleState.BATTLEOVER)
             {
                 yield break;
             }
         }
-        if(state != BattleState.BATTLEOVER)
+        if (state != BattleState.BATTLEOVER)
         {
             ActionSelection();
         }
@@ -229,7 +269,7 @@ public class BattleSystem : MonoBehaviour
 
     IEnumerator RunAfterTurn(BattleUnit sourceUnit)
     {
-        if(state == BattleState.BATTLEOVER)
+        if (state == BattleState.BATTLEOVER)
         {
             yield break;
         }
@@ -396,6 +436,7 @@ public class BattleSystem : MonoBehaviour
             }
             if (currentAction == 2)
             {
+                preState = state;
                 OpenPartyAction();
             }
         }
@@ -432,7 +473,7 @@ public class BattleSystem : MonoBehaviour
             dialogBox.EnableDialogText(true);
             //技決定の処理
             //StartCoroutine(PlayerMove());
-            StartCoroutine(RunTurns());
+            StartCoroutine(RunTurns(BattleAction.MOVE));
         }
         //キャンセル
         if (Input.GetKeyDown(KeyCode.X))
@@ -486,10 +527,25 @@ public class BattleSystem : MonoBehaviour
 
             //ポケモン選択画面を消す
             partyScreen.gameObject.SetActive(false);
-            //状態をbusyにする
-            state = BattleState.BUSY;
+
+
             //入れ替えの処理をする
-            StartCoroutine(SwitchPokemon(selectedMember));
+            //戦闘不能時は敵の攻撃がない
+            //Playerが入れ替えアクションをした場合は、敵の攻撃がある
+            // ActionSelectionによって入れ替えが行われるのかどうか
+            if (preState == BattleState.ACTIONSELECTION)
+            {
+                //ポケモンを交代した場合
+                preState = null;
+                StartCoroutine(RunTurns(BattleAction.SWITCHPOKEMON));
+            }
+            else
+            {
+                //死に出しした場合
+                state = BattleState.BUSY;
+                StartCoroutine(SwitchPokemon(selectedMember));
+            }
+
         }
 
         if (Input.GetKeyDown(KeyCode.X))
@@ -503,8 +559,7 @@ public class BattleSystem : MonoBehaviour
 
     IEnumerator SwitchPokemon(Pokemon newPokemon)
     {
-        bool fainted = playerUnit.Pokemon.HP <= 0;
-        if (!fainted)
+        if (playerUnit.Pokemon.HP > 0)
         {
             //元のポケモンを下げる
             yield return dialogBox.TypeDialog($"戻れ！{playerUnit.Pokemon.Base.Name}");
@@ -523,13 +578,6 @@ public class BattleSystem : MonoBehaviour
         playerUnit.SetUp(newPokemon);//playerの戦闘可能なpokemonをセット
         yield return new WaitForSeconds(0.6f);
         dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
-        if (fainted)
-        {
-            //ChooseFirstTurn();
-        }
-        else
-        {
-            //StartCoroutine(EnemyMove());
-        }
+        state = BattleState.RUNNINGTURN;
     }
 }
