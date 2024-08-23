@@ -28,7 +28,10 @@ public class MoveBase : ScriptableObject
 
     //どのステータスをどの程度変化させるかのリスト
     [SerializeField] MoveEffects effects;
+    [SerializeField] List<SecondaryEffects> secondaryEffects;
 
+
+    public List<SecondaryEffects> SecondaryEffects {get => secondaryEffects;}
     public MoveEffects Effects { get => effects; }
     public MoveTarget Target { get => target; }
     public MoveCategory Category { get => category; }
@@ -66,7 +69,18 @@ public class MoveEffects
     [SerializeField] ConditionID volatileStatus;
     public ConditionID VolatileStatus { get => volatileStatus; }//戦闘終了時に回復する
 }
+
+//追加効果の実装
 [System.Serializable]
+public class SecondaryEffects: MoveEffects
+{
+    [SerializeField] int chance;//追加効果の命中率
+    [SerializeField] MoveTarget target;//追加効果の対象
+
+    public int Chance { get => chance; }
+    public MoveTarget MoveTarget{ get => target; }
+
+}
 public class StatBoost
 {
     public Stat stat; //ポケモンクラスで定義した６つのステータスを格納するクラス

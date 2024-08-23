@@ -5,6 +5,8 @@ using Unity.Mathematics;
 using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Events;
+using System;
+using Unity.VisualScripting;
 
 public enum BattleState
 {
@@ -184,7 +186,7 @@ public class BattleSystem : MonoBehaviour
             //変化技なら
             if (move.Base.Category == MoveCategory.Stat)
             {
-                yield return RunMoveEffects(move, sourceUnit.Pokemon, targetUnit.Pokemon);
+                yield return RunMoveEffects(move.Base.Effects, sourceUnit.Pokemon, targetUnit.Pokemon,move.Base.Target);
             }
             else
             {
@@ -193,9 +195,21 @@ public class BattleSystem : MonoBehaviour
                 //HPの描画 
                 yield return targetUnit.Hud.UpdateHP();
                 yield return ShowDamageDetails(damageDetails);
-
             }
 
+            //追加効果をチェック
+            if(move.Base.SecondaryEffects != null && move.Base.SecondaryEffects.Count > 0 && targetUnit.Pokemon.HP > 0)
+            {
+                //それぞれの追加効果を反映
+                foreach(SecondaryEffects secondary in move.Base.SecondaryEffects)
+                {
+                    //一定確率で状態異常
+                    if(UnityEngine.Random.Range(1,101) <= secondary.Chance)
+                    {
+                        yield return RunMoveEffects(secondary,sourceUnit.Pokemon,targetUnit.Pokemon,secondary.MoveTarget);
+                    }
+                }
+            }
 
             //戦闘不能ならメッセージ
             if (targetUnit.Pokemon.HP <= 0)
@@ -229,12 +243,12 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
-    IEnumerator RunMoveEffects(Move move, Pokemon source, Pokemon target)
+    IEnumerator RunMoveEffects(MoveEffects effects, Pokemon source, Pokemon target,MoveTarget moveTarget)
     {
-        MoveEffects effects = move.Base.Effects;
+        
         if (effects.Boosts != null)
         {
-            if (move.Base.Target == MoveTarget.Self)
+            if (moveTarget == MoveTarget.Self)
             {
                 //自身に対してステータス変化
                 source.ApplyBoosts(effects.Boosts);
