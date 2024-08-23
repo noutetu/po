@@ -10,17 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0dd8c2e410c7341628b16b456dc38e21, type: 3}
-  m_Name: Sing
+  m_Name: SundAttack
   m_EditorClassIdentifier: 
-  name: "\u3046\u305F\u3046"
-  description: "\u76F8\u624B\u3092\u7720\u3089\u305B\u308B"
+  name: "\u3059\u306A\u304B\u3051"
+  description: "\u76F8\u624B\u306B\u7802\u3092\u304B\u3051\u3066\u547D\u4E2D\u7387\u3092\u4E0B\u3052\u308B"
   power: 0
-  accuracy: 55
+  accuracy: 90
   pp: 40
   type: 1
   target: 0
   category: 2
   effects:
-    boosts: []
-    status: 3
+    boosts:
+    - stat: 6
+      boost: -5
+    status: 0
     volatileStatus: 0

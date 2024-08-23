@@ -82,6 +82,7 @@ public enum PokemonType
 
 }
 
+// バフ/デバフで使われるステータス
 public enum Stat
 {
     Attack,
@@ -90,6 +91,9 @@ public enum Stat
     SpDefence,
     Speed,
     MaxHP,
+
+    Accuracy, //命中率
+    Evasion,  //回避率
 }
 
 

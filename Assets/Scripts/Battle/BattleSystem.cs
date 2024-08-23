@@ -61,7 +61,7 @@ public class BattleSystem : MonoBehaviour
 
     void ChooseFirstTurn()
     {
-        if(playerUnit.Pokemon.Speed >= enemyUnit.Pokemon.Speed)
+        if (playerUnit.Pokemon.Speed >= enemyUnit.Pokemon.Speed)
         {
             //Playerのターン
             ActionSelection();
@@ -163,49 +163,55 @@ public class BattleSystem : MonoBehaviour
         //まひなら技を出せない
         bool canRunMove = sourceUnit.Pokemon.OnBeforeTurn();//技を使うポケモン(sourceUnit)が動けるかどうか
         yield return ShowStatusChanges(sourceUnit.Pokemon);
-        if(!canRunMove)
+        if (!canRunMove)
         {
             //技が使えない場合でダメージを受ける場合がある
             yield return sourceUnit.Hud.UpdateHP();
-            CheckForBattleOver(targetUnit);
-            
+
             yield break;
         }
 
         move.PP--;
         yield return dialogBox.TypeDialog
         ($"{sourceUnit.Pokemon.Base.Name} の{move.Base.Name}!!");
-
-        sourceUnit.PlayerAttackAnimation();
-        yield return new WaitForSeconds(0.4f);
-        targetUnit.PlayerHitAnimation();
-        yield return new WaitForSeconds(0.4f);
-        //変化技なら
-        if (move.Base.Category == MoveCategory.Stat)
+        //技が命中したかどうかチェックする
+        if (CheckIfMoveHits(move, sourceUnit.Pokemon, targetUnit.Pokemon))
         {
-            yield return RunMoveEffects(move,sourceUnit.Pokemon,targetUnit.Pokemon);
+            sourceUnit.PlayerAttackAnimation();
+            yield return new WaitForSeconds(0.4f);
+            targetUnit.PlayerHitAnimation();
+            yield return new WaitForSeconds(0.4f);
+            //変化技なら
+            if (move.Base.Category == MoveCategory.Stat)
+            {
+                yield return RunMoveEffects(move, sourceUnit.Pokemon, targetUnit.Pokemon);
+            }
+            else
+            {
+                //ダメージ計算
+                DamageDetails damageDetails = targetUnit.Pokemon.TakeDamage(move, sourceUnit.Pokemon);
+                //HPの描画 
+                yield return targetUnit.Hud.UpdateHP();
+                yield return ShowDamageDetails(damageDetails);
+
+            }
+
+
+            //戦闘不能ならメッセージ
+            if (targetUnit.Pokemon.HP <= 0)
+            {
+                yield return dialogBox.TypeDialog
+            ($"{targetUnit.Pokemon.Base.Name}はたおれた!!");
+                targetUnit.PlayerFaintAnimation();
+                yield return new WaitForSeconds(0.5f);
+                CheckForBattleOver(targetUnit);
+            }
         }
         else
         {
-            //ダメージ計算
-            DamageDetails damageDetails = targetUnit.Pokemon.TakeDamage(move, sourceUnit.Pokemon);
-            //HPの描画 
-            yield return targetUnit.Hud.UpdateHP();
-            yield return ShowDamageDetails(damageDetails);
-
-        }
-
-
-        //戦闘不能ならメッセージ
-        if (targetUnit.Pokemon.HP <= 0)
-        {
             yield return dialogBox.TypeDialog
-        ($"{targetUnit.Pokemon.Base.Name}はたおれた!!");
-            targetUnit.PlayerFaintAnimation();
-            yield return new WaitForSeconds(0.5f);
-            CheckForBattleOver(targetUnit);
+            ($"{sourceUnit.Pokemon.Base.Name}の攻撃は当たらなかった");
         }
-
         //ターン終了時
         //状態異常ダメージを受ける
         sourceUnit.Pokemon.OnAfterTurn();
@@ -223,33 +229,66 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
-    IEnumerator RunMoveEffects(Move move,Pokemon source, Pokemon target)
+    IEnumerator RunMoveEffects(Move move, Pokemon source, Pokemon target)
     {
         MoveEffects effects = move.Base.Effects;
-            if (effects.Boosts != null)
+        if (effects.Boosts != null)
+        {
+            if (move.Base.Target == MoveTarget.Self)
             {
-                if (move.Base.Target == MoveTarget.Self)
-                {
-                    //自身に対してステータス変化
-                    source.ApplyBoosts(effects.Boosts);
-                }
-                else
-                {
-                    //相手に対してステータス変化
-                    target.ApplyBoosts(effects.Boosts);
-                }
+                //自身に対してステータス変化
+                source.ApplyBoosts(effects.Boosts);
             }
-            //何かしらの状態異常があれば
-            if(effects.Status != ConditionID.None)
+            else
             {
-                target.SetStatus(effects.Status);
+                //相手に対してステータス変化
+                target.ApplyBoosts(effects.Boosts);
             }
-            if(effects.VolatileStatus != ConditionID.None)
-            {
-                target.SetVolatileStatus(effects.VolatileStatus);
-            }
-            yield return ShowStatusChanges((source));
-            yield return ShowStatusChanges((target));
+        }
+        //何かしらの状態異常があれば
+        if (effects.Status != ConditionID.None)
+        {
+            target.SetStatus(effects.Status);
+        }
+        if (effects.VolatileStatus != ConditionID.None)
+        {
+            target.SetVolatileStatus(effects.VolatileStatus);
+        }
+        yield return ShowStatusChanges((source));
+        yield return ShowStatusChanges((target));
+    }
+
+    bool CheckIfMoveHits(Move move, Pokemon source, Pokemon target)
+    {
+        float moveAccuracy = move.Base.Accuracy;
+        //技を出す側のboostされた命中率
+        int accuracy = source.StatBoosts[Stat.Accuracy];
+        //技を受ける側のブーストされた回避率
+        int evasion = target.StatBoosts[Stat.Evasion];
+
+        float[] boostValue = new float[] { 1f, 4f/3f, 5f/3f, 2f, 7f/3f, 8f/3f, 3f };
+
+        //命中率アップ
+        if(accuracy > 0)
+        {
+            moveAccuracy *=boostValue[accuracy];
+        }
+        else
+        {
+            moveAccuracy /= boostValue[-accuracy];
+        }
+
+
+        //回避率アップ
+        if(evasion > 0)
+        {
+            moveAccuracy /=boostValue[evasion];
+        }
+        else
+        {
+            moveAccuracy *= boostValue[-evasion];
+        }
+        return UnityEngine.Random.Range(1, 101) <= moveAccuracy;
     }
 
     //ステータス変化のログを表示する関数
