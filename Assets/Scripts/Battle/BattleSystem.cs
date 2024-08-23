@@ -344,6 +344,10 @@ public class BattleSystem : MonoBehaviour
 
     bool CheckIfMoveHits(Move move, Pokemon source, Pokemon target)
     {
+        if(move.Base.AnyHit)
+        {
+            return true;
+        }
         float moveAccuracy = move.Base.Accuracy;
         //技を出す側のboostされた命中率
         int accuracy = source.StatBoosts[Stat.Accuracy];
@@ -486,7 +490,12 @@ public class BattleSystem : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Z))
         {
+            Move move = playerUnit.Pokemon.Moves[currentMove];
             // 技決定
+            if(move.PP == 0)
+            {
+                return;
+            }
             //・技選択のUIは非表示
             dialogBox.EnableMoveSelector(false);
             //・ダイアログ復活

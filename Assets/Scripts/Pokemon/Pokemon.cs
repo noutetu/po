@@ -1,13 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Unity.Collections;
-using Unity.Mathematics;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using UnityEngine.UIElements;
+using System.Linq;
 
 //レベルに応じたステータスの違うモンスターを生成するクラス
 //ただしデータのみ
@@ -347,8 +340,10 @@ public class Pokemon
 
     public Move GetRandomMove()
     {
-        int r = UnityEngine.Random.Range(0, Moves.Count);
-        return Moves[r];
+        //PPが0なら排除
+        List<Move> movesWithPP = Moves.Where(x => x.PP > 0).ToList();
+        int r = Random.Range(0, movesWithPP.Count);
+        return movesWithPP[r];
     }
 }
 

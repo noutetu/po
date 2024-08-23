@@ -17,6 +17,8 @@ public class MoveBase : ScriptableObject
     [SerializeField] int power;
     //命中率
     [SerializeField] int accuracy;
+    //必中
+    [SerializeField] bool anyHit;
     //PP
     [SerializeField] int pp;
     //優先度
@@ -45,6 +47,7 @@ public class MoveBase : ScriptableObject
     public int PP { get => pp; }
     public PokemonType Type { get => type; }
     public int Priority { get => priority; }
+    public bool AnyHit { get => anyHit; }
 
 
 }
