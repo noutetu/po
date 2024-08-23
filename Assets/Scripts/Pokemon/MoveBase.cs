@@ -19,6 +19,8 @@ public class MoveBase : ScriptableObject
     [SerializeField] int accuracy;
     //PP
     [SerializeField] int pp;
+    //優先度
+    [SerializeField] int priority;
     //タイプ
     [SerializeField] PokemonType type;
 
@@ -42,6 +44,7 @@ public class MoveBase : ScriptableObject
     public int Accuracy { get => accuracy; }
     public int PP { get => pp; }
     public PokemonType Type { get => type; }
+    public int Priority { get => priority; }
 
 
 }

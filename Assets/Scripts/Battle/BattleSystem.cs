@@ -106,14 +106,34 @@ public class BattleSystem : MonoBehaviour
             enemyUnit.Pokemon.CurrentMove = enemyUnit.Pokemon.GetRandomMove();
 
             //先行の決定
+            bool playerGoesFirst = true;
+
+            //スピードが高ければ先行
             BattleUnit firstUnit = playerUnit;
             BattleUnit secondUnit = enemyUnit;
-            if (playerUnit.Pokemon.Speed < enemyUnit.Pokemon.Speed)
+
+            //それぞれの技の優先度を比較
+            int playerMovePriority = playerUnit.Pokemon.CurrentMove.Base.Priority;
+            int enemyMovePriority = enemyUnit.Pokemon.CurrentMove.Base.Priority;
+
+            if (playerMovePriority < enemyMovePriority)
+            {
+                //敵が先行
+                playerGoesFirst = false;
+            }
+            else if (playerMovePriority == enemyMovePriority)
+            {
+                //モンスターのスピードが速い方が先行
+                if (playerUnit.Pokemon.Speed < enemyUnit.Pokemon.Speed)
+                {
+                    playerGoesFirst = false;
+                }
+            }
+            if(playerGoesFirst ==false)
             {
                 firstUnit = enemyUnit;
                 secondUnit = playerUnit;
             }
-
             //先行の処理
             yield return RunMove(firstUnit, secondUnit, firstUnit.Pokemon.CurrentMove);
             yield return RunAfterTurn(firstUnit);
