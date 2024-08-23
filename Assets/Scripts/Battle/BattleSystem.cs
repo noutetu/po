@@ -13,7 +13,7 @@ public enum BattleState
     START,
     ACTIONSELECTION,//行動選択
     MOVESELECTION,//技選択
-    PERFROMMOVE,
+    RUNNINGTURN,
     BUSY,
     PARTYSCREEN,//ポケモン選択状態
     BATTLEOVER,//バトル終了
@@ -58,21 +58,7 @@ public class BattleSystem : MonoBehaviour
         yield return dialogBox.TypeDialog
         ($"やせいの{enemyUnit.Pokemon.Base.Name} があらわれた！！！");
 
-        ChooseFirstTurn();
-    }
-
-    void ChooseFirstTurn()
-    {
-        if (playerUnit.Pokemon.Speed >= enemyUnit.Pokemon.Speed)
-        {
-            //Playerのターン
-            ActionSelection();
-        }
-        else
-        {
-            //Playerのターン
-            StartCoroutine(EnemyMove());
-        }
+        ActionSelection();
     }
 
     private void ActionSelection()
@@ -100,33 +86,46 @@ public class BattleSystem : MonoBehaviour
         partyScreen.SetPartyData(playerParty.Pokemons);
     }
 
-    //プレイヤーの技発動
-    IEnumerator PlayerMove()
+    IEnumerator RunTurns()
     {
-        state = BattleState.PERFROMMOVE;
-        //技を決定
-        Move move = playerUnit.Pokemon.Moves[currentMove];
-        yield return RunMove(playerUnit, enemyUnit, move);
+        state = BattleState.RUNNINGTURN;
+        //それぞれの技の決定
+        playerUnit.Pokemon.CurrentMove = playerUnit.Pokemon.Moves[currentMove];
+        enemyUnit.Pokemon.CurrentMove = enemyUnit.Pokemon.GetRandomMove();
 
-        if (state == BattleState.PERFROMMOVE)
+        //先行の決定
+        BattleUnit firstUnit = playerUnit;
+        BattleUnit secondUnit = enemyUnit;
+        if (playerUnit.Pokemon.Speed < enemyUnit.Pokemon.Speed)
         {
-            StartCoroutine(EnemyMove());
+            firstUnit = enemyUnit;
+            secondUnit = playerUnit;
         }
-    }
 
-    IEnumerator EnemyMove()
-    {
-        state = BattleState.PERFROMMOVE;
-        //技を決定 =>ランダム
-        Move move = enemyUnit.Pokemon.GetRandomMove();
+        //先行の処理
+        yield return RunMove(firstUnit, secondUnit, firstUnit.Pokemon.CurrentMove);
+        yield return RunAfterTurn(firstUnit);
+        if (state == BattleState.BATTLEOVER)
+        {
+            yield break;
+        }
 
-        yield return RunMove(enemyUnit, playerUnit, move);
-
-        if (state == BattleState.PERFROMMOVE)
+        if (secondUnit.Pokemon.HP > 0)
+        {
+            //後攻の処理
+            yield return RunMove(secondUnit, firstUnit, secondUnit.Pokemon.CurrentMove);
+            yield return RunAfterTurn(secondUnit);
+            if (state == BattleState.BATTLEOVER)
+            {
+                yield break;
+            }
+        }
+        if(state != BattleState.BATTLEOVER)
         {
             ActionSelection();
         }
     }
+
 
     void CheckForBattleOver(BattleUnit faintedUnit)
     {
@@ -186,7 +185,7 @@ public class BattleSystem : MonoBehaviour
             //変化技なら
             if (move.Base.Category == MoveCategory.Stat)
             {
-                yield return RunMoveEffects(move.Base.Effects, sourceUnit.Pokemon, targetUnit.Pokemon,move.Base.Target);
+                yield return RunMoveEffects(move.Base.Effects, sourceUnit.Pokemon, targetUnit.Pokemon, move.Base.Target);
             }
             else
             {
@@ -198,15 +197,15 @@ public class BattleSystem : MonoBehaviour
             }
 
             //追加効果をチェック
-            if(move.Base.SecondaryEffects != null && move.Base.SecondaryEffects.Count > 0 && targetUnit.Pokemon.HP > 0)
+            if (move.Base.SecondaryEffects != null && move.Base.SecondaryEffects.Count > 0 && targetUnit.Pokemon.HP > 0)
             {
                 //それぞれの追加効果を反映
-                foreach(SecondaryEffects secondary in move.Base.SecondaryEffects)
+                foreach (SecondaryEffects secondary in move.Base.SecondaryEffects)
                 {
                     //一定確率で状態異常
-                    if(UnityEngine.Random.Range(1,101) <= secondary.Chance)
+                    if (UnityEngine.Random.Range(1, 101) <= secondary.Chance)
                     {
-                        yield return RunMoveEffects(secondary,sourceUnit.Pokemon,targetUnit.Pokemon,secondary.MoveTarget);
+                        yield return RunMoveEffects(secondary, sourceUnit.Pokemon, targetUnit.Pokemon, secondary.MoveTarget);
                     }
                 }
             }
@@ -226,6 +225,17 @@ public class BattleSystem : MonoBehaviour
             yield return dialogBox.TypeDialog
             ($"{sourceUnit.Pokemon.Base.Name}の攻撃は当たらなかった");
         }
+    }
+
+    IEnumerator RunAfterTurn(BattleUnit sourceUnit)
+    {
+        if(state == BattleState.BATTLEOVER)
+        {
+            yield break;
+        }
+        //RunningTurnまで待機
+        yield return new WaitUntil(() => state == BattleState.RUNNINGTURN);
+
         //ターン終了時
         //状態異常ダメージを受ける
         sourceUnit.Pokemon.OnAfterTurn();
@@ -243,9 +253,9 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
-    IEnumerator RunMoveEffects(MoveEffects effects, Pokemon source, Pokemon target,MoveTarget moveTarget)
+    IEnumerator RunMoveEffects(MoveEffects effects, Pokemon source, Pokemon target, MoveTarget moveTarget)
     {
-        
+
         if (effects.Boosts != null)
         {
             if (moveTarget == MoveTarget.Self)
@@ -280,12 +290,12 @@ public class BattleSystem : MonoBehaviour
         //技を受ける側のブーストされた回避率
         int evasion = target.StatBoosts[Stat.Evasion];
 
-        float[] boostValue = new float[] { 1f, 4f/3f, 5f/3f, 2f, 7f/3f, 8f/3f, 3f };
+        float[] boostValue = new float[] { 1f, 4f / 3f, 5f / 3f, 2f, 7f / 3f, 8f / 3f, 3f };
 
         //命中率アップ
-        if(accuracy > 0)
+        if (accuracy > 0)
         {
-            moveAccuracy *=boostValue[accuracy];
+            moveAccuracy *= boostValue[accuracy];
         }
         else
         {
@@ -294,9 +304,9 @@ public class BattleSystem : MonoBehaviour
 
 
         //回避率アップ
-        if(evasion > 0)
+        if (evasion > 0)
         {
-            moveAccuracy /=boostValue[evasion];
+            moveAccuracy /= boostValue[evasion];
         }
         else
         {
@@ -421,7 +431,8 @@ public class BattleSystem : MonoBehaviour
             //・ダイアログ復活
             dialogBox.EnableDialogText(true);
             //技決定の処理
-            StartCoroutine(PlayerMove());
+            //StartCoroutine(PlayerMove());
+            StartCoroutine(RunTurns());
         }
         //キャンセル
         if (Input.GetKeyDown(KeyCode.X))
@@ -514,11 +525,11 @@ public class BattleSystem : MonoBehaviour
         dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
         if (fainted)
         {
-            ChooseFirstTurn();
+            //ChooseFirstTurn();
         }
         else
         {
-            StartCoroutine(EnemyMove());
+            //StartCoroutine(EnemyMove());
         }
     }
 }

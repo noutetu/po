@@ -23,6 +23,8 @@ public class Pokemon
     public int Level { get => level; }
     //使える技のリスト
     public List<Move> Moves { get; set; }
+    //現在の技を格納
+    public Move CurrentMove { get; set; }
 
     //初期ステータス
     public Dictionary<Stat, int> Stats { get; set; }
