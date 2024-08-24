@@ -14,8 +14,10 @@ public class DialogManager : MonoBehaviour
     public UnityAction OnshowDialog;
     public UnityAction OnCloseDialog;
     bool isTyping;
+    public bool IsShowing {get; private set;}
 
     public static DialogManager Instance { get ; private set ; }
+
 
     Dialog dialog;
     int currenLine = 0;
@@ -28,6 +30,7 @@ public class DialogManager : MonoBehaviour
     {
         //フレーム終わりまで待つ
         yield return new WaitForEndOfFrame();
+        IsShowing = true;
         OnshowDialog?.Invoke();
         dialogBox.SetActive(true);
         this.dialog = dialog;
@@ -45,6 +48,7 @@ public class DialogManager : MonoBehaviour
             }
             else
             {
+                IsShowing = false;
                 currenLine = 0;
                 dialogBox.SetActive(false);
                 OnCloseDialog?.Invoke();

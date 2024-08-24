@@ -26,8 +26,8 @@ public class Character : MonoBehaviour
     public IEnumerator Move(Vector2 moveVec,UnityAction OnMoveover = null)
     {
         //向きを変えたい
-        animator.MoveX = moveVec.x;
-        animator.MoveY = moveVec.y;
+        animator.MoveX = Mathf.Clamp(moveVec.x, -1f,1f);
+        animator.MoveY = Mathf.Clamp(moveVec.y, -1f,1f);
         Vector3 targetPos = transform.position;
         targetPos += (Vector3)moveVec;
         if (!IsWalkable(targetPos))
