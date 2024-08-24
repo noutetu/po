@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
@@ -30,7 +31,7 @@ public class Character : MonoBehaviour
         animator.MoveY = Mathf.Clamp(moveVec.y, -1f,1f);
         Vector3 targetPos = transform.position;
         targetPos += (Vector3)moveVec;
-        if (!IsWalkable(targetPos))
+        if (!isPathClear(targetPos))
         {
             yield break;
         }
@@ -63,5 +64,13 @@ public class Character : MonoBehaviour
     {
         //targetPosに半径0.2の円のrayを飛ばして、ぶつからなかったらtrue
         return !Physics2D.OverlapCircle(targetPos, 0.05f, GameLayers.Instance.SolidObjectsLayer | GameLayers.Instance.InteractableLayer);
+    }
+
+    bool isPathClear(Vector3 targetPos)
+    {   
+        Vector3 diff = targetPos - transform.position;
+        Vector3 dir = diff.normalized;//正規化lk
+        return Physics2D.BoxCast(transform.position+dir,new Vector2(0.2f,0.2f),0,dir,diff.magnitude-1,
+        GameLayers.Instance.SolidObjectsLayer | GameLayers.Instance.InteractableLayer | GameLayers.Instance.PlayerLayer) == false;
     }
 }

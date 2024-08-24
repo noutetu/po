@@ -37,8 +37,14 @@ public class NPCController : MonoBehaviour,Iinteractable
     IEnumerator Walk()
     {
         state = NPCState.Walk;
+        //移動してたら次のアニメーションに行く
+        Vector3 oldPosition = transform.position;
         yield return character.Move(movePattern[currentPattern]);
-        currentPattern = (currentPattern + 1) % movePattern.Count;
+        if(oldPosition != transform.position)
+        {
+            currentPattern = (currentPattern + 1) % movePattern.Count;
+        }
+        
         state = NPCState.Idle;
     }
 
