@@ -7,7 +7,7 @@ using UnityEngine.Events;
 public class PlayerController : MonoBehaviour
 {
 
-    Animator animator;
+    CharacterAnimator animator;
     [SerializeField] float moveSpeed;
     [SerializeField] LayerMask solidObjectsLayer;//壁判定のレイヤー
     [SerializeField] LayerMask interactableLayer;//壁判定のレイヤー
@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        animator = GetComponent<Animator>();
+        animator = GetComponent<CharacterAnimator>();
     }
 
     public void HundleUpdate()
@@ -41,8 +41,8 @@ public class PlayerController : MonoBehaviour
             if (input != Vector2.zero)
             {
                 //向きを変えたい
-                animator.SetFloat("MoveX", input.x);
-                animator.SetFloat("MoveY", input.y);
+                animator.MoveX = input.x;
+                animator.MoveY = input.y;
                 Vector2 targetPos = transform.position;
                 targetPos += input;
                 if (IsWalkable(targetPos))
@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
-        animator.SetBool("IsMoving", isMoving);
+        animator.IsMoving = isMoving;
         if(Input.GetKeyDown(KeyCode.Z))
         {
             Interact();
@@ -61,7 +61,7 @@ public class PlayerController : MonoBehaviour
     void Interact()
     {
         //向いてる方向
-        Vector3 faceDirection = new Vector3(animator.GetFloat("MoveX"),animator.GetFloat("MoveY"));
+        Vector3 faceDirection = new Vector3(animator.MoveX,animator.MoveY);
         //鑑賞する場所
         Vector3 interactPos = transform.position + faceDirection;
 
@@ -112,7 +112,7 @@ public class PlayerController : MonoBehaviour
             if (Random.Range(0, 100) < 10)
             {
                 Debug.Log("野生のポケモンが現れた！！！");
-                animator.SetBool("IsMoving", false);
+                animator.IsMoving = false;
 
                 OnEncounted();
             }

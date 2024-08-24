@@ -9,6 +9,7 @@ public class SpriteAnimator
     SpriteRenderer spriteRenderer;
     //表示するための画像たち
     List<Sprite> frames;
+    public List<Sprite> Frames { get => frames; }
     //フレームレート:どのタイミングで画像を変えるのか
     float frameRate;
     float timer;
