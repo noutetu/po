@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     Animator animator;
     [SerializeField] float moveSpeed;
     [SerializeField] LayerMask solidObjectsLayer;//壁判定のレイヤー
+    [SerializeField] LayerMask interactableLayer;//壁判定のレイヤー
     [SerializeField] LayerMask longGrassLayer;//草むら判定
 
     public UnityAction OnEncounted;
@@ -79,7 +80,7 @@ public class PlayerController : MonoBehaviour
     bool IsWalkable(Vector2 targetPos)
     {
         //targetPosに半径0.2の円のrayを飛ばして、ぶつからなかったらtrue
-        return !Physics2D.OverlapCircle(targetPos, 0.05f, solidObjectsLayer);
+        return !Physics2D.OverlapCircle(targetPos, 0.05f, solidObjectsLayer|interactableLayer);
     }
 
     //自分の場所から円のRayを飛ばして、草むらに当たったらランダムエンカウント

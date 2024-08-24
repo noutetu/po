@@ -171,6 +171,12 @@ public class BattleSystem : MonoBehaviour
             {
 
             }
+            //逃げるコマンドの選択 
+            else if(battleAction == BattleAction.RUN)
+            {
+                Debug.Log("にこめ");
+                OnBattleOver();
+            }
             //　敵の行動----------------------------------------------------------------------
             enemyUnit.Pokemon.CurrentMove = enemyUnit.Pokemon.GetRandomMove();
             yield return RunMove(enemyUnit, playerUnit, enemyUnit.Pokemon.CurrentMove);
@@ -462,6 +468,11 @@ public class BattleSystem : MonoBehaviour
             {
                 preState = state;
                 OpenPartyAction();
+            }
+            if(currentAction == 3)
+            {
+                Debug.Log("一個前");
+                StartCoroutine(RunTurns(BattleAction.RUN));
             }
         }
     }
