@@ -56,7 +56,7 @@ public class PlayerController : MonoBehaviour
         Collider2D collider2D =  Physics2D.OverlapCircle(interactPos, 0.3f,GameLayers.Instance.InteractableLayer);
         if(collider2D)
         {
-            collider2D.GetComponent<Iinteractable>()?.Interact();
+            collider2D.GetComponent<Iinteractable>()?.Interact(transform.position);
         }
 
     }
@@ -74,7 +74,7 @@ public class PlayerController : MonoBehaviour
     //自分の場所から円のRayを飛ばして、草むらに当たったらランダムエンカウント
     void CheckForEncounters()
     {
-        if (Physics2D.OverlapCircle(transform.position, 0.2f, GameLayers.Instance.LongGrassLayer))
+        if (Physics2D.OverlapCircle(transform.position, 0.3f, GameLayers.Instance.LongGrassLayer))
         {
             if (Random.Range(0, 100) < 10)
             {

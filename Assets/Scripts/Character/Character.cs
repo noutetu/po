@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -8,7 +7,7 @@ using UnityEngine.Events;
 public class Character : MonoBehaviour
 {
     CharacterAnimator animator;
-    public CharacterAnimator Animator { get => animator;}
+    public CharacterAnimator Animator { get => animator; }
 
     [SerializeField] float moveSpeed;
 
@@ -24,11 +23,11 @@ public class Character : MonoBehaviour
 
 
     //コルーチンを使って徐々に目的に近づける
-    public IEnumerator Move(Vector2 moveVec,UnityAction OnMoveover = null)
+    public IEnumerator Move(Vector2 moveVec, UnityAction OnMoveover = null)
     {
         //向きを変えたい
-        animator.MoveX = Mathf.Clamp(moveVec.x, -1f,1f);
-        animator.MoveY = Mathf.Clamp(moveVec.y, -1f,1f);
+        animator.MoveX = Mathf.Clamp(moveVec.x, -1f, 1f);
+        animator.MoveY = Mathf.Clamp(moveVec.y, -1f, 1f);
         Vector3 targetPos = transform.position;
         targetPos += (Vector3)moveVec;
         if (!isPathClear(targetPos))
@@ -53,7 +52,7 @@ public class Character : MonoBehaviour
         IsMoving = false;
         OnMoveover?.Invoke();
     }
-    
+
     public void HundleUpdate()
     {
         animator.IsMoving = IsMoving;
@@ -67,10 +66,26 @@ public class Character : MonoBehaviour
     }
 
     bool isPathClear(Vector3 targetPos)
-    {   
+    {
         Vector3 diff = targetPos - transform.position;
         Vector3 dir = diff.normalized;//正規化lk
-        return Physics2D.BoxCast(transform.position+dir,new Vector2(0.2f,0.2f),0,dir,diff.magnitude-1,
+        return Physics2D.BoxCast(transform.position + dir, new Vector2(0.2f, 0.2f), 0, dir, diff.magnitude - 1,
         GameLayers.Instance.SolidObjectsLayer | GameLayers.Instance.InteractableLayer | GameLayers.Instance.PlayerLayer) == false;
+    }
+
+
+    public void LookToward(Vector3 targetPos)
+    {
+        float xDiff = Mathf.Floor(targetPos.x) - Mathf.Floor(transform.position.x);
+        float yDiff = Mathf.Floor(targetPos.y) - Mathf.Floor(transform.position.y);
+        //向きを変えたい
+
+        if (xDiff == 0 || yDiff == 0)
+        {
+
+        }
+
+        animator.MoveX = Mathf.Clamp(xDiff, -1f, 1f);
+        animator.MoveY = Mathf.Clamp(yDiff, -1f, 1f);
     }
 }

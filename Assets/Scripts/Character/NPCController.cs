@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NPCController : MonoBehaviour,Iinteractable
+public class NPCController : MonoBehaviour, Iinteractable
 {
     Character character;
     [SerializeField] Dialog dialog;
@@ -13,19 +13,20 @@ public class NPCController : MonoBehaviour,Iinteractable
     [SerializeField] List<Vector2> movePattern;
     int currentPattern;
 
-    private void Awake() {
+    private void Awake()
+    {
         currentPattern = 0;
         state = NPCState.Idle;
         character = GetComponent<Character>();
     }
     void Update()
     {
-        
+
         //一定間隔で右に移動
-        if(state == NPCState.Idle)
+        if (state == NPCState.Idle)
         {
             idleTimer += Time.deltaTime;
-            if(idleTimer > timeBetweenPattern)
+            if (idleTimer > timeBetweenPattern)
             {
                 idleTimer = 0;
                 StartCoroutine(Walk());
@@ -40,34 +41,37 @@ public class NPCController : MonoBehaviour,Iinteractable
         //移動してたら次のアニメーションに行く
         Vector3 oldPosition = transform.position;
         yield return character.Move(movePattern[currentPattern]);
-        if(oldPosition != transform.position)
+        if (oldPosition != transform.position)
         {
             currentPattern = (currentPattern + 1) % movePattern.Count;
         }
-        
+
         state = NPCState.Idle;
     }
 
     //話しかけられた時に実行
-    public void Interact()
+    public void Interact(Vector3 initiator)
     {
-       if(state == NPCState.Idle)
-       {
+        if (state == NPCState.Idle)
+        {
             state = NPCState.Dialog;
-            StartCoroutine(DialogManager.Instance.ShowDialog(dialog,OnDialogFinished));
+            //話しかけてきた人の方を向く
+            character.LookToward(initiator);
+            StartCoroutine(DialogManager.Instance.ShowDialog(dialog, OnDialogFinished));
 
+        }
+
+        void OnDialogFinished()
+        {
+            idleTimer = 0;
+            state = NPCState.Idle;
+        }
     }
 
-    void OnDialogFinished()
+    public enum NPCState
     {
-        state = NPCState.Idle;
+        Idle,
+        Walk,
+        Dialog,
     }
-}
-
-public enum NPCState
-{
-    Idle,
-    Walk,
-    Dialog,
-}
 }
