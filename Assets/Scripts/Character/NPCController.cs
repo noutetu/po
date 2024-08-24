@@ -8,6 +8,6 @@ public class NPCController : MonoBehaviour,Iinteractable
     //話しかけられた時に実行
     public void Interact()
     {
-        DialogManager.Instance.ShowDialog(dialog);
+        StartCoroutine(DialogManager.Instance.ShowDialog(dialog));
     }
 }

@@ -24,11 +24,20 @@ public class GameController : MonoBehaviour
         playerController.OnEncounted += StartBattle;
         battleSystem.OnBattleOver += endBattle;
         DialogManager.Instance.OnshowDialog += OnShowDialog;
+        DialogManager.Instance.OnCloseDialog += OnCloseDialog;
     }
 
     void OnShowDialog()
     {
         state = GameState.Dialog;
+    }
+
+    void OnCloseDialog()
+    {
+        if(state == GameState.Dialog)
+        {
+            state = GameState.FreeRoam;
+        }
     }
 
     void Update()
