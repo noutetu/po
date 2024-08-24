@@ -24,16 +24,18 @@ public class NPCController : MonoBehaviour,Iinteractable
     {
        if(state == NPCState.Idle)
        {
-            StartCoroutine(DialogManager.Instance.ShowDialog(dialog));
+            state = NPCState.Dialog;
+            StartCoroutine(DialogManager.Instance.ShowDialog(dialog,OnDialogFinished));
        }
+    }
+
+    void OnDialogFinished()
+    {
+        state = NPCState.Idle;
     }
 
     void Update()
     {
-        if(DialogManager.Instance.IsShowing)
-        {
-            return;
-        }
         //一定間隔で右に移動
         if(state == NPCState.Idle)
         {
@@ -60,4 +62,5 @@ public enum NPCState
 {
     Idle,
     Walk,
+    Dialog, 
 }
