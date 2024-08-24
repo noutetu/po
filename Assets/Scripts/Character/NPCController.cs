@@ -18,22 +18,9 @@ public class NPCController : MonoBehaviour,Iinteractable
         state = NPCState.Idle;
         character = GetComponent<Character>();
     }
-
-    //話しかけられた時に実行
-    public void Interact()
-    {
-       if(state == NPCState.Idle)
-       {
-            StartCoroutine(DialogManager.Instance.ShowDialog(dialog));
-       }
-    }
-
     void Update()
     {
-        if(DialogManager.Instance.IsShowing)
-        {
-            return;
-        }
+        
         //一定間隔で右に移動
         if(state == NPCState.Idle)
         {
@@ -54,10 +41,27 @@ public class NPCController : MonoBehaviour,Iinteractable
         currentPattern = (currentPattern + 1) % movePattern.Count;
         state = NPCState.Idle;
     }
+
+    //話しかけられた時に実行
+    public void Interact()
+    {
+       if(state == NPCState.Idle)
+       {
+            state = NPCState.Dialog;
+            StartCoroutine(DialogManager.Instance.ShowDialog(dialog,OnDialogFinished));
+
+    }
+
+    void OnDialogFinished()
+    {
+        state = NPCState.Idle;
+    }
 }
 
 public enum NPCState
 {
     Idle,
     Walk,
+    Dialog,
+}
 }
