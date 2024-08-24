@@ -7,26 +7,21 @@ using UnityEngine.Events;
 public class PlayerController : MonoBehaviour
 {
 
-    CharacterAnimator animator;
-    [SerializeField] float moveSpeed;
-    [SerializeField] LayerMask solidObjectsLayer;//壁判定のレイヤー
-    [SerializeField] LayerMask interactableLayer;//壁判定のレイヤー
-    [SerializeField] LayerMask longGrassLayer;//草むら判定
-
     public UnityAction OnEncounted;
 
-    bool isMoving;
+    Character character;
 
     Vector2 input;
 
     private void Awake()
     {
-        animator = GetComponent<CharacterAnimator>();
+        character = GetComponent<Character>();
+        
     }
 
     public void HundleUpdate()
     {
-        if (!isMoving)
+        if (!character.IsMoving)
         {
             //キーボードの入力方向に動く
             input.x = Input.GetAxisRaw("Horizontal");
@@ -40,18 +35,10 @@ public class PlayerController : MonoBehaviour
             //入力があったら
             if (input != Vector2.zero)
             {
-                //向きを変えたい
-                animator.MoveX = input.x;
-                animator.MoveY = input.y;
-                Vector2 targetPos = transform.position;
-                targetPos += input;
-                if (IsWalkable(targetPos))
-                {
-                    StartCoroutine(Move(targetPos));
-                }
+                StartCoroutine(character.Move(input,CheckForEncounters));
             }
         }
-        animator.IsMoving = isMoving;
+        character.HundleUpdate();
         if(Input.GetKeyDown(KeyCode.Z))
         {
             Interact();
@@ -61,12 +48,12 @@ public class PlayerController : MonoBehaviour
     void Interact()
     {
         //向いてる方向
-        Vector3 faceDirection = new Vector3(animator.MoveX,animator.MoveY);
+        Vector3 faceDirection = new Vector3(character.Animator.MoveX,character.Animator.MoveY);
         //鑑賞する場所
         Vector3 interactPos = transform.position + faceDirection;
 
         //鑑賞する場所にrayを飛ばす
-        Collider2D collider2D =  Physics2D.OverlapCircle(interactPos, 0.3f,interactableLayer);
+        Collider2D collider2D =  Physics2D.OverlapCircle(interactPos, 0.3f,GameLayers.Instance.InteractableLayer);
         if(collider2D)
         {
             collider2D.GetComponent<Iinteractable>()?.Interact();
@@ -76,43 +63,23 @@ public class PlayerController : MonoBehaviour
 
 
 
-    //コルーチンを使って徐々に目的に近づける
-    IEnumerator Move(Vector3 targetPos)
-    {
-        //移動中は入力を受け付けない
-        isMoving = true;
-        //targetPosとの差があるなら繰り返す。
-        while ((targetPos - transform.position).sqrMagnitude > Mathf.Epsilon)
-        {
-            //targetPosに近づける
-            transform.position = Vector3.MoveTowards(
-            transform.position,//現在の場所
-            targetPos,//目的地
-            moveSpeed * Time.deltaTime);
-
-            yield return null;
-        }
-
-        transform.position = targetPos;
-        isMoving = false;
-        CheckForEncounters();
-    }
+    
     //targetPosに移動可能か調べる関数
     bool IsWalkable(Vector2 targetPos)
     {
         //targetPosに半径0.2の円のrayを飛ばして、ぶつからなかったらtrue
-        return !Physics2D.OverlapCircle(targetPos, 0.05f, solidObjectsLayer|interactableLayer);
+        return !Physics2D.OverlapCircle(targetPos, 0.05f, GameLayers.Instance.SolidObjectsLayer|GameLayers.Instance.InteractableLayer);
     }
 
     //自分の場所から円のRayを飛ばして、草むらに当たったらランダムエンカウント
     void CheckForEncounters()
     {
-        if (Physics2D.OverlapCircle(transform.position, 0.2f, longGrassLayer))
+        if (Physics2D.OverlapCircle(transform.position, 0.2f, GameLayers.Instance.LongGrassLayer))
         {
             if (Random.Range(0, 100) < 10)
             {
                 Debug.Log("野生のポケモンが現れた！！！");
-                animator.IsMoving = false;
+                character.Animator.IsMoving = false;
 
                 OnEncounted();
             }
