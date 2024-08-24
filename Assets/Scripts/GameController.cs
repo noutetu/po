@@ -8,6 +8,7 @@ public enum GameState
 {
     FreeRoam,//マップ移動
     Battle,//戦闘
+    Dialog,
 }
 
 
@@ -22,6 +23,12 @@ public class GameController : MonoBehaviour
     {
         playerController.OnEncounted += StartBattle;
         battleSystem.OnBattleOver += endBattle;
+        DialogManager.Instance.OnshowDialog += OnShowDialog;
+    }
+
+    void OnShowDialog()
+    {
+        state = GameState.Dialog;
     }
 
     void Update()
@@ -35,6 +42,10 @@ public class GameController : MonoBehaviour
         {
             //BattleSystem
             battleSystem.HundleUpdate();
+        }
+        else if(state == GameState.Dialog)
+        {
+            DialogManager.Instance.HundleUpdate();
         }
     }
 
