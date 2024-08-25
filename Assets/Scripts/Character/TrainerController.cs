@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class TrainerController : MonoBehaviour
 {
-    [SerializeField] Character character;
+    Character character;
     [SerializeField] GameObject exclamation;
+    [SerializeField] Dialog dialog;
 
     private void Awake() {
         character = GetComponent<Character>();
@@ -21,5 +22,6 @@ public class TrainerController : MonoBehaviour
         var MoveVec = diff - diff.normalized;//playerとtrainerの差
         MoveVec = new Vector2(Mathf.Round(MoveVec.x), Mathf.Round(MoveVec.y));
         yield return character.Move(MoveVec);
+        StartCoroutine(DialogManager.Instance.ShowDialog(dialog,null));
     }
 }

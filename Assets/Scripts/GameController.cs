@@ -9,6 +9,7 @@ public enum GameState
     FreeRoam,//マップ移動
     Battle,//戦闘
     Dialog,
+    CutScene,
 }
 
 
@@ -33,6 +34,7 @@ public class GameController : MonoBehaviour
         TrainerController trainer = trainerCollider2D.GetComponentInParent<TrainerController>();
         if (trainer )
         {
+            state = GameState.CutScene;
             StartCoroutine(trainer.TriggerTrainerBattle(playerController));
         }
     }

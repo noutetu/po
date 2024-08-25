@@ -96,6 +96,7 @@ public class PlayerController : MonoBehaviour
         if (trainerCollider2D)
         {  
             Debug.Log("トレーナーの視界に入った");
+            character.Animator.IsMoving = false;
             OnEnterTrainersView?.Invoke(trainerCollider2D);
         }
     }
