@@ -37,7 +37,7 @@ public class BattleDialogBox : MonoBehaviour
         }
         yield return new WaitForSeconds(0.5f);
     }
-
+    
     //UIの表示/非表示
 
     //dialogTextの表示

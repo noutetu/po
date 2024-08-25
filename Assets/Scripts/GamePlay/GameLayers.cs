@@ -8,6 +8,7 @@ public class GameLayers : MonoBehaviour
     [SerializeField] LayerMask interactableLayer;//壁判定のレイヤー
     [SerializeField] LayerMask longGrassLayer;//草むら判定
     [SerializeField] LayerMask playerLayer;//草むら判定
+    [SerializeField] LayerMask trainerViewLayer;//相手トレーナーの視界判定
 
 
     //どこからでも使えるようにしたい
@@ -17,6 +18,7 @@ public class GameLayers : MonoBehaviour
     public LayerMask InteractableLayer {get => interactableLayer;}
     public LayerMask LongGrassLayer {get => longGrassLayer;}
     public LayerMask PlayerLayer {get => playerLayer;}
+    public LayerMask TrainerViewLayer {get => trainerViewLayer;}
 
     private void Awake()
     {

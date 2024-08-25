@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
 {
 
     public UnityAction OnEncounted;
+    public UnityAction<Collider2D> OnEnterTrainersView;
 
     Character character;
 
@@ -35,7 +36,7 @@ public class PlayerController : MonoBehaviour
             //入力があったら
             if (input != Vector2.zero)
             {
-                StartCoroutine(character.Move(input,CheckForEncounters));
+                StartCoroutine(character.Move(input,OnMoveOver));
             }
         }
         character.HundleUpdate();
@@ -60,15 +61,17 @@ public class PlayerController : MonoBehaviour
         }
 
     }
-
-
-
-    
     //targetPosに移動可能か調べる関数
     bool IsWalkable(Vector2 targetPos)
     {
         //targetPosに半径0.2の円のrayを飛ばして、ぶつからなかったらtrue
         return !Physics2D.OverlapCircle(targetPos, 0.05f, GameLayers.Instance.SolidObjectsLayer|GameLayers.Instance.InteractableLayer);
+    }
+
+    void OnMoveOver()
+    {
+        CheckForEncounters();
+        CheckIfInTrainerView();
     }
 
     //自分の場所から円のRayを飛ばして、草むらに当たったらランダムエンカウント
@@ -83,6 +86,17 @@ public class PlayerController : MonoBehaviour
 
                 OnEncounted();
             }
+        }
+    }
+
+    //移動先が、トレーナーの視界ならエンカウント
+    void CheckIfInTrainerView()
+    {
+        Collider2D trainerCollider2D = Physics2D.OverlapCircle(transform.position, 0.3f, GameLayers.Instance.TrainerViewLayer);
+        if (trainerCollider2D)
+        {  
+            Debug.Log("トレーナーの視界に入った");
+            OnEnterTrainersView?.Invoke(trainerCollider2D);
         }
     }
 }
