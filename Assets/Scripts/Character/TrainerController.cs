@@ -8,6 +8,11 @@ public class TrainerController : MonoBehaviour
     [SerializeField] GameObject exclamation;
     [SerializeField] Dialog dialog;
     [SerializeField] GameObject view;
+    [SerializeField] new string name;
+    [SerializeField] Sprite sprite;
+
+    public string Name {get => name;}
+    public Sprite Sprite {get => sprite;}
 
     private void Awake() {
         character = GetComponent<Character>();
@@ -27,7 +32,13 @@ public class TrainerController : MonoBehaviour
         var MoveVec = diff - diff.normalized;//playerとtrainerの差
         MoveVec = new Vector2(Mathf.Round(MoveVec.x), Mathf.Round(MoveVec.y));
         yield return character.Move(MoveVec);
-        StartCoroutine(DialogManager.Instance.ShowDialog(dialog,null));
+        //話しかける
+        StartCoroutine(DialogManager.Instance.ShowDialog(dialog,StartBattle));
+    }
+
+    void StartBattle()
+    {
+        GameController.Instance.StartTrainerBattle(this);
     }
 
     void SetViewRotation(faceDirection dir)
@@ -46,7 +57,7 @@ public class TrainerController : MonoBehaviour
                 angels = 180;
                 break;
             case faceDirection.Down:
-                angels =-180;
+                angels = 0;
                 break;
         }
         view.transform.eulerAngles = new Vector3(0,0,angels);

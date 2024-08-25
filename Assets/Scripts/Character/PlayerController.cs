@@ -6,6 +6,11 @@ using UnityEngine.Events;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField] new string name;
+    [SerializeField] Sprite sprite;
+
+    public string Name {get => name;}
+    public Sprite Sprite {get => sprite;}
 
     public UnityAction OnEncounted;
     public UnityAction<Collider2D> OnEnterTrainersView;

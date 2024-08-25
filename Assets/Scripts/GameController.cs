@@ -10,6 +10,8 @@ public enum GameState
     Battle,//戦闘
     Dialog,
     CutScene,
+    TrainerBattle,
+
 }
 
 
@@ -20,16 +22,23 @@ public class GameController : MonoBehaviour
     [SerializeField] BattleSystem battleSystem;
     GameState state = GameState.FreeRoam;
 
+    public static GameController Instance {get; private set;}
+
+
+    private void Awake() {
+        Instance = this;
+    }
+
     void Start()
     {
         playerController.OnEncounted += StartBattle;
-        playerController.OnEnterTrainersView += StartTrainerBattle;
+        playerController.OnEnterTrainersView += TriggerTrainerBattle;
         battleSystem.OnBattleOver += endBattle;
         DialogManager.Instance.OnshowDialog += OnShowDialog;
         DialogManager.Instance.OnCloseDialog += OnCloseDialog;
     }
 
-    void StartTrainerBattle(Collider2D trainerCollider2D)
+    void TriggerTrainerBattle(Collider2D trainerCollider2D)
     {
         TrainerController trainer = trainerCollider2D.GetComponentInParent<TrainerController>();
         if (trainer )
@@ -80,6 +89,16 @@ public class GameController : MonoBehaviour
         //シーンないから一致するコンポーネントを一つ取得する
         Pokemon wildPokemon = FindObjectOfType<MapArea>().GetRandomWildPokemon(); ;
         battleSystem.StartBattle(pokemonParty, wildPokemon);
+    }
+
+    public void StartTrainerBattle(TrainerController trainer)
+    {
+        state = GameState.Battle;
+        battleSystem.gameObject.SetActive(true);
+        worldCamera.gameObject.SetActive(false);
+        PokemonParty pokemonParty = playerController.GetComponent<PokemonParty>();
+        PokemonParty trainerParty = trainer.GetComponent<PokemonParty>();
+        battleSystem.StartTrainerBattle(pokemonParty, trainerParty);
     }
 
     public void endBattle()

@@ -4,9 +4,9 @@ using System.Net.NetworkInformation;
 using Unity.Mathematics;
 using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Events;
 using System;
-using Unity.VisualScripting;
 
 public enum BattleState
 {
@@ -34,6 +34,10 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] BattleDialogBox dialogBox;
     [SerializeField] PartyScreen partyScreen;
 
+    [SerializeField] Image playerImage;
+    [SerializeField] Image trainerImage;
+
+
     int currentAction;// 0:Fight, 1:Run
     int currentMove;// 0:左上, 1:右上, 2:左下, 3:右下
     int currentMember;
@@ -53,6 +57,14 @@ public class BattleSystem : MonoBehaviour
         this.playerParty = pokemonParty;
         this.wildPokemon = wildPokemon;
         StartCoroutine(SetUpBattle());
+    }
+    public void StartTrainerBattle(PokemonParty playerParty, PokemonParty trainerParty)
+    {
+        this.playerParty = playerParty;
+        Debug.Log("トレーナーバトル開始");
+        playerImage.sprite = playerParty.GetComponent<PlayerController>().Sprite;
+        trainerImage.sprite = trainerParty.GetComponent<TrainerController>().Sprite;
+        //StartCoroutine(SetUpBattle());
     }
 
     IEnumerator SetUpBattle()
