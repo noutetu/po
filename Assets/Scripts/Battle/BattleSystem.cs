@@ -48,37 +48,85 @@ public class BattleSystem : MonoBehaviour
 
     //これらの変数をどこから取得する
     PokemonParty playerParty;
+    PokemonParty trainerParty;
     Pokemon wildPokemon;
+    TrainerController trainer;
+    PlayerController player;
+
+    bool isTrainerBattle;
 
 
-
+    //　野生ポケモンとのバトル
     public void StartBattle(PokemonParty pokemonParty, Pokemon wildPokemon)
     {
         this.playerParty = pokemonParty;
         this.wildPokemon = wildPokemon;
         StartCoroutine(SetUpBattle());
     }
+    //トレーナーバトル
     public void StartTrainerBattle(PokemonParty playerParty, PokemonParty trainerParty)
     {
+        player = playerParty.GetComponent<PlayerController>();
+        trainer = trainerParty.GetComponent<TrainerController>();
+        isTrainerBattle = true;
         this.playerParty = playerParty;
+        this.trainerParty = trainerParty;
         Debug.Log("トレーナーバトル開始");
-        playerImage.sprite = playerParty.GetComponent<PlayerController>().Sprite;
-        trainerImage.sprite = trainerParty.GetComponent<TrainerController>().Sprite;
-        //StartCoroutine(SetUpBattle());
+        playerImage.sprite = player.Sprite;
+        trainerImage.sprite = trainer.Sprite;
+        StartCoroutine(SetUpBattle());
     }
 
     IEnumerator SetUpBattle()
     {
-        state = BattleState.START;
-        //モンスターの生成と描画
-        playerUnit.SetUp(playerParty.GetHealthyPokemon());//playerの戦闘可能なpokemonをセット
-        enemyUnit.SetUp(wildPokemon);//野生ポケモンをセット
+        //UIを隠す
+        playerUnit.Clear();
+        enemyUnit.Clear();
+
+        //野生ポケモンとトレーナーの区別が必要
+        //トレーナーとのバトルでなければ
+        if (!isTrainerBattle)
+        {
+            //モンスターの生成と描画
+            playerUnit.SetUp(playerParty.GetHealthyPokemon());//playerの戦闘可能なpokemonをセット
+            enemyUnit.SetUp(wildPokemon);//野生ポケモンをセット
+            dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
+            yield return dialogBox.TypeDialog
+            ($"やせいの{enemyUnit.Pokemon.Base.Name} があらわれた！！！");
+        }
+        //トレーナーバトルなら
+        else
+        {
+            //モンスターを隠す
+            playerUnit.gameObject.SetActive(false);
+            enemyUnit.gameObject.SetActive(false);
+            playerImage.gameObject.SetActive(true);
+            trainerImage.gameObject.SetActive(true);
+            
+            yield return dialogBox.TypeDialog
+            ($"{trainer.Name}がバトルをしかけてきた！！！");
+
+            //トレーナーがモンスターを出す
+            trainerImage.gameObject.SetActive(false);
+            enemyUnit.gameObject.SetActive(true);
+            
+            Pokemon enemyPokemon = trainerParty.GetHealthyPokemon();
+            enemyUnit.SetUp(enemyPokemon);
+            yield return dialogBox.TypeDialog
+            ($"{trainer.Name}は{enemyPokemon.Base.Name} を繰り出した！！！");
+            //playerがモンスターを出す
+
+            playerImage.gameObject.SetActive(false);
+            playerUnit.gameObject.SetActive(true);
+            
+            Pokemon playerPokemon = playerParty.GetHealthyPokemon();
+            playerUnit.SetUp(playerPokemon);
+            yield return dialogBox.TypeDialog
+            ($"いけっ {playerPokemon.Base.Name}!!!");
+            dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
+            
+        }
         partyScreen.Init();
-        dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
-
-        yield return dialogBox.TypeDialog
-        ($"やせいの{enemyUnit.Pokemon.Base.Name} があらわれた！！！");
-
         ActionSelection();
     }
 
@@ -141,7 +189,7 @@ public class BattleSystem : MonoBehaviour
                     playerGoesFirst = false;
                 }
             }
-            if(playerGoesFirst ==false)
+            if (playerGoesFirst == false)
             {
                 firstUnit = enemyUnit;
                 secondUnit = playerUnit;
@@ -184,7 +232,7 @@ public class BattleSystem : MonoBehaviour
 
             }
             //逃げるコマンドの選択 
-            else if(battleAction == BattleAction.RUN)
+            else if (battleAction == BattleAction.RUN)
             {
                 Debug.Log("にこめ");
                 OnBattleOver();
@@ -362,7 +410,7 @@ public class BattleSystem : MonoBehaviour
 
     bool CheckIfMoveHits(Move move, Pokemon source, Pokemon target)
     {
-        if(move.Base.AnyHit)
+        if (move.Base.AnyHit)
         {
             return true;
         }
@@ -481,7 +529,7 @@ public class BattleSystem : MonoBehaviour
                 preState = state;
                 OpenPartyAction();
             }
-            if(currentAction == 3)
+            if (currentAction == 3)
             {
                 Debug.Log("一個前");
                 StartCoroutine(RunTurns(BattleAction.RUN));
@@ -515,7 +563,7 @@ public class BattleSystem : MonoBehaviour
         {
             Move move = playerUnit.Pokemon.Moves[currentMove];
             // 技決定
-            if(move.PP == 0)
+            if (move.PP == 0)
             {
                 return;
             }
