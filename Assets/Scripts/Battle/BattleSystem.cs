@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using System;
+using Unity.VisualScripting;
 
 public enum BattleState
 {
@@ -194,6 +195,7 @@ public class BattleSystem : MonoBehaviour
                 firstUnit = enemyUnit;
                 secondUnit = playerUnit;
             }
+            Pokemon secondPokemon = secondUnit.Pokemon;
             //先行の処理
             yield return RunMove(firstUnit, secondUnit, firstUnit.Pokemon.CurrentMove);
             yield return RunAfterTurn(firstUnit);
@@ -202,7 +204,7 @@ public class BattleSystem : MonoBehaviour
                 yield break;
             }
 
-            if (secondUnit.Pokemon.HP > 0)
+            if (secondPokemon.HP > 0)
             {
                 //後攻の処理
                 yield return RunMove(secondUnit, firstUnit, secondUnit.Pokemon.CurrentMove);
@@ -223,7 +225,6 @@ public class BattleSystem : MonoBehaviour
                 Pokemon selectedMember = playerParty.Pokemons[currentMember];
 
                 //入れ替え開始
-                state = BattleState.BUSY;
                 yield return SwitchPokemon(selectedMember);
             }
             //アイテムコマンドの選択-----------------------------------------------------------
@@ -270,7 +271,25 @@ public class BattleSystem : MonoBehaviour
         }
         else
         {
-            BattleOver();
+            if(isTrainerBattle)
+            {
+                //次のモンスターがいる場合
+                Pokemon nextPokemon = trainerParty.GetHealthyPokemon();
+                if(nextPokemon == null)
+                {
+                    //入れ替える
+                    BattleOver();
+                }
+                else
+                {
+                    //入れ替える
+                    StartCoroutine(SendNextTrainerPokemon(nextPokemon));
+                }
+            }
+            else
+            {   //野生なら一匹で終了
+                BattleOver();
+            }
         }
     }
 
@@ -642,7 +661,6 @@ public class BattleSystem : MonoBehaviour
             else
             {
                 //死に出しした場合
-                state = BattleState.BUSY;
                 StartCoroutine(SwitchPokemon(selectedMember));
             }
 
@@ -659,6 +677,7 @@ public class BattleSystem : MonoBehaviour
 
     IEnumerator SwitchPokemon(Pokemon newPokemon)
     {
+        state = BattleState.BUSY;
         if (playerUnit.Pokemon.HP > 0)
         {
             //元のポケモンを下げる
@@ -678,6 +697,21 @@ public class BattleSystem : MonoBehaviour
         playerUnit.SetUp(newPokemon);//playerの戦闘可能なpokemonをセット
         yield return new WaitForSeconds(0.6f);
         dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
+        state = BattleState.RUNNINGTURN;
+    }
+
+    IEnumerator SendNextTrainerPokemon(Pokemon nextPokemon)
+    {
+        state = BattleState.BUSY;
+
+        //新しいのを出す
+        //nextをセット
+        //モンスターの生成と描画
+        //playerの戦闘可能なpokemonをセット
+        enemyUnit.SetUp(nextPokemon);
+    
+        yield return dialogBox.TypeDialog
+        ($"{trainer.Name}は{nextPokemon.Base.Name}を繰り出した!!!");
         state = BattleState.RUNNINGTURN;
     }
 }
