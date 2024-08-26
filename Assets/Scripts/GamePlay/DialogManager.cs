@@ -27,7 +27,7 @@ public class DialogManager : MonoBehaviour
         Instance = this;
     }
     //会話の表示をする
-    public IEnumerator ShowDialog(Dialog dialog,UnityAction onFinished)
+    public IEnumerator ShowDialog(Dialog dialog,UnityAction onFinished = null)
     {
         //フレーム終わりまで待つ
         OnDialogFinished = onFinished;

@@ -24,6 +24,8 @@ public class GameController : MonoBehaviour
 
     public static GameController Instance {get; private set;}
 
+    TrainerController trainer;
+
 
     private void Awake() {
         Instance = this;
@@ -82,6 +84,7 @@ public class GameController : MonoBehaviour
     public void StartBattle()
     {
         state = GameState.Battle;
+        trainer = null;
         battleSystem.gameObject.SetActive(true);
         worldCamera.gameObject.SetActive(false);
         // パーティと野生ポケモンの取得
@@ -93,6 +96,7 @@ public class GameController : MonoBehaviour
 
     public void StartTrainerBattle(TrainerController trainer)
     {
+        this.trainer = trainer;
         state = GameState.Battle;
         battleSystem.gameObject.SetActive(true);
         worldCamera.gameObject.SetActive(false);
@@ -103,6 +107,12 @@ public class GameController : MonoBehaviour
 
     public void endBattle()
     {
+        //トレーナーバトルだったら
+        if(trainer)
+        {
+            trainer.BattleLost();
+        }
+
         state = GameState.FreeRoam;
         battleSystem.gameObject.SetActive(false);
         worldCamera.gameObject.SetActive(true);
