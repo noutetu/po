@@ -109,14 +109,14 @@ public class BattleSystem : MonoBehaviour
             enemyUnit.gameObject.SetActive(false);
             playerImage.gameObject.SetActive(true);
             trainerImage.gameObject.SetActive(true);
-            
+
             yield return dialogBox.TypeDialog
             ($"{trainer.Name}がバトルをしかけてきた！！！");
 
             //トレーナーがモンスターを出す
             trainerImage.gameObject.SetActive(false);
             enemyUnit.gameObject.SetActive(true);
-            
+
             Pokemon enemyPokemon = trainerParty.GetHealthyPokemon();
             enemyUnit.SetUp(enemyPokemon);
             yield return dialogBox.TypeDialog
@@ -125,13 +125,13 @@ public class BattleSystem : MonoBehaviour
 
             playerImage.gameObject.SetActive(false);
             playerUnit.gameObject.SetActive(true);
-            
+
             Pokemon playerPokemon = playerParty.GetHealthyPokemon();
             playerUnit.SetUp(playerPokemon);
             yield return dialogBox.TypeDialog
             ($"いけっ {playerPokemon.Base.Name}!!!");
             dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
-            
+
         }
         partyScreen.Init();
         ActionSelection();
@@ -259,7 +259,7 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
-    IEnumerator AboutToUse(Pokemon newpokemon) 
+    IEnumerator AboutToUse(Pokemon newpokemon)
     {
         state = BattleState.BUSY;
         yield return dialogBox.TypeDialog
@@ -287,16 +287,17 @@ public class BattleSystem : MonoBehaviour
         }
         else
         {
-            if(isTrainerBattle)
+            if (isTrainerBattle)
             {
                 //次のモンスターがいる場合
                 Pokemon nextPokemon = trainerParty.GetHealthyPokemon();
-                if(nextPokemon == null)
+                if (nextPokemon == null)
                 {
+                    //isTrainerBattle = false;
                     BattleOver();
                 }
                 else
-                {   
+                {
                     //敵が入れ替える
                     StartCoroutine(AboutToUse(nextPokemon));
                 }
@@ -314,7 +315,7 @@ public class BattleSystem : MonoBehaviour
         state = BattleState.BATTLEOVER;
         playerParty.Pokemons.ForEach((p) => p.OnBattleOver());
         OnBattleOver();
-
+        isTrainerBattle = false;
     }
 
 
@@ -520,7 +521,7 @@ public class BattleSystem : MonoBehaviour
         {
             HundlePartySelection();
         }
-        else if(state == BattleState.ABOUTTOUSE)
+        else if (state == BattleState.ABOUTTOUSE)
         {
             HandleAboutToUse();
         }
@@ -529,22 +530,22 @@ public class BattleSystem : MonoBehaviour
     void HandleAboutToUse()
     {
         //上下キーを押すと選択が切り替わる
-        if(Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
         {
             aboutToUse = !aboutToUse;
         }
         dialogBox.UpdateChoiceBox(aboutToUse);
 
-        if(Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetKeyDown(KeyCode.Z))
         {
             dialogBox.EnableChoiceBox(false);
-            if(aboutToUse)
+            if (aboutToUse)
             {
                 //yes
                 //モンスター入れ替えスクリーンを出す
                 preState = BattleState.ABOUTTOUSE;
                 OpenPartyAction();
-                
+
             }
             else
             {
@@ -552,6 +553,12 @@ public class BattleSystem : MonoBehaviour
                 //そのまま相手モンスターが出てくる
                 StartCoroutine(SendNextTrainerPokemon());
             }
+        }
+        else if (Input.GetKeyDown(KeyCode.X))
+        {
+            //キャンセル
+            StartCoroutine(SendNextTrainerPokemon());
+            dialogBox.EnableChoiceBox(false);
         }
     }
 
@@ -716,9 +723,24 @@ public class BattleSystem : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.X))
         {
+            if(playerUnit.Pokemon.HP <= 0)
+            {
+                partyScreen.SetMessage("入れ替えるモンスターを選んでください");
+
+                return;
+            }
             //ポケモン選択画面を消したい
             partyScreen.gameObject.SetActive(false);
-            ActionSelection();
+            if (preState == BattleState.ABOUTTOUSE)
+            {
+                preState = null;
+                //キャンセル
+                StartCoroutine(SendNextTrainerPokemon());
+            }
+            else
+            {
+                ActionSelection();
+            }
         }
 
     }
@@ -747,7 +769,7 @@ public class BattleSystem : MonoBehaviour
         dialogBox.SetMoveNames(playerUnit.Pokemon.Moves);
 
         //倒した後の入れ替えならトレーナーがモンスターを出してくる
-        if(preState == null)
+        if (preState == null)
         {
             state = BattleState.RUNNINGTURN;
         }
@@ -768,7 +790,7 @@ public class BattleSystem : MonoBehaviour
         //モンスターの生成と描画
         //playerの戦闘可能なpokemonをセット
         enemyUnit.SetUp(nextPokemon);
-    
+
         yield return dialogBox.TypeDialog
         ($"{trainer.Name}は{nextPokemon.Base.Name}を繰り出した!!!");
         state = BattleState.RUNNINGTURN;

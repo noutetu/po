@@ -48,6 +48,10 @@ public class TrainerController : MonoBehaviour, Iinteractable
         GameController.Instance.StartTrainerBattle(this);
     }
 
+    private void Update() {
+        character.HundleUpdate();
+    }
+
     void SetViewRotation(faceDirection dir)
     {
 
