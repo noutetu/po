@@ -27,6 +27,10 @@ public enum BattleAction
     ITEM,
     RUN,
 }
+//トレーナーのモンスターを倒した時に、こちらも入れ替える
+//・UI
+//・キー選択
+//・入れ替え実装
 
 public class BattleSystem : MonoBehaviour
 {
@@ -277,13 +281,13 @@ public class BattleSystem : MonoBehaviour
                 Pokemon nextPokemon = trainerParty.GetHealthyPokemon();
                 if(nextPokemon == null)
                 {
-                    //入れ替える
                     BattleOver();
                 }
                 else
-                {
-                    //入れ替える
-                    StartCoroutine(SendNextTrainerPokemon(nextPokemon));
+                {   //playerにモンスターを入れ替えるか聞く
+                    dialogBox.EnableChoiceBox(true);
+                    //敵が入れ替える
+                    //StartCoroutine(SendNextTrainerPokemon(nextPokemon));
                 }
             }
             else

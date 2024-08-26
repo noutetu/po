@@ -16,6 +16,11 @@ public class BattleDialogBox : MonoBehaviour
     [SerializeField] Text typeText;
     [SerializeField] Text dialogText;
 
+    //トレーナーバトル時に相手モンスターを倒した時の入れ替え
+    [SerializeField] GameObject choiceBox;
+    [SerializeField] Text yesText;
+    [SerializeField] Text noText;
+
     [SerializeField] int letterPerSecond;//1文字あたりの時間
 
     [SerializeField] Color highlightColor;
@@ -58,6 +63,13 @@ public class BattleDialogBox : MonoBehaviour
         moveSelector.SetActive(enabled);
         moveDetails.SetActive(enabled);
     }
+    
+    //choiceBoxの表示
+    public void EnableChoiceBox(bool enabled)
+    {
+        choiceBox.SetActive(enabled);
+    }
+
 
     //選択中のアクションの色を変える
     public void UpdateActionSelection(int selectAction)
@@ -106,6 +118,20 @@ public class BattleDialogBox : MonoBehaviour
             else{
                 ppText.color = Color.black;
             }
+        }
+    }
+    //選択中のアクションの色を変える
+    public void UpdateChoiceBox(bool yesSelected)
+    {
+        if(yesSelected)
+        {
+            yesText.color = highlightColor;
+            noText.color = Color.black;
+        }
+        else
+        {
+            noText.color = highlightColor;
+            yesText.color = Color.black;
         }
     }
 
