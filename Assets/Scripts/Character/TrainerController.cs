@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TrainerController : MonoBehaviour
+public class TrainerController : MonoBehaviour, Iinteractable
 {
     Character character;
     [SerializeField] GameObject exclamation;
@@ -61,5 +61,13 @@ public class TrainerController : MonoBehaviour
                 break;
         }
         view.transform.eulerAngles = new Vector3(0,0,angels);
+    }
+
+    public void Interact(Vector3 initiator)
+    {
+        //こちらを向いて
+        character.LookToward(initiator);
+        //話しかける
+        StartCoroutine(DialogManager.Instance.ShowDialog(dialog,StartBattle));       
     }
 }
